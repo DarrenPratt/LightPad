@@ -121,6 +121,8 @@ Exit criteria:
 
 ### Phase 3: Build single-image trace mode
 
+Status: Complete on 2026-04-30.
+
 Goal: complete the second major v1 workflow.
 
 Work:

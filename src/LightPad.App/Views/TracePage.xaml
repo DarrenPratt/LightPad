@@ -4,10 +4,173 @@
              xmlns:viewModels="clr-namespace:LightPad.App.ViewModels"
              x:Class="LightPad.App.Views.TracePage"
              x:DataType="viewModels:TraceViewModel"
-             Title="Trace Image">
-    <Grid>
-        <Label Text="{Binding StatusText}"
-               HorizontalOptions="Center"
-               VerticalOptions="Center" />
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#111111">
+    <Grid RowDefinitions="Auto,*,Auto"
+          Padding="16"
+          RowSpacing="14">
+        <Grid ColumnDefinitions="Auto,*,Auto"
+              ColumnSpacing="12">
+            <Button Text="Back"
+                    Command="{Binding BackCommand}"
+                    BackgroundColor="#D91A1A1A"
+                    TextColor="White"
+                    CornerRadius="18"
+                    Padding="16,10" />
+
+            <Border Grid.Column="1"
+                    BackgroundColor="#D91A1A1A"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 18">
+                <VerticalStackLayout Padding="16,10"
+                                     Spacing="4">
+                    <Label Text="Trace Image"
+                           TextColor="#F5E7A1"
+                           FontAttributes="Bold" />
+                    <Label Text="{Binding StatusText}"
+                           TextColor="White"
+                           LineBreakMode="TailTruncation" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Button Grid.Column="2"
+                    Text="Import"
+                    Command="{Binding ImportImageCommand}"
+                    BackgroundColor="#F5E7A1"
+                    TextColor="Black"
+                    CornerRadius="18"
+                    Padding="16,10" />
+        </Grid>
+
+        <Border Grid.Row="1"
+                BackgroundColor="#1A1A1A"
+                Stroke="#2E2E2E"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 32">
+            <Grid x:Name="TraceSurface">
+                <Grid.GestureRecognizers>
+                    <PanGestureRecognizer PanUpdated="OnImagePanUpdated" />
+                    <PinchGestureRecognizer PinchUpdated="OnImagePinchUpdated" />
+                    <TapGestureRecognizer NumberOfTapsRequired="2"
+                                          Tapped="OnTraceSurfaceDoubleTapped" />
+                </Grid.GestureRecognizers>
+
+                <Border Margin="20"
+                        BackgroundColor="#F3F1E8"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 24" />
+
+                <Image x:Name="TraceImage"
+                       Source="{Binding ImagePath}"
+                       Aspect="AspectFit"
+                       Opacity="{Binding ImageOpacity}"
+                       Scale="{Binding Zoom}"
+                       TranslationX="{Binding OffsetX}"
+                       TranslationY="{Binding OffsetY}"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       IsVisible="{Binding HasImage}" />
+
+                <Border BackgroundColor="#BF111111"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 24"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                        Padding="24,18"
+                        IsVisible="{Binding IsEmptyStateVisible}">
+                    <VerticalStackLayout Spacing="10"
+                                         HorizontalOptions="Center">
+                        <Label Text="No reference image yet"
+                               TextColor="White"
+                               FontAttributes="Bold"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Import one image. Then drag to move it, pinch to scale it, or adjust opacity below."
+                               TextColor="#DDFFFFFF"
+                               HorizontalTextAlignment="Center"
+                               MaximumWidthRequest="320" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border Margin="20"
+                        BackgroundColor="#AA111111"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 18"
+                        Padding="14,10"
+                        HorizontalOptions="End"
+                        VerticalOptions="Start"
+                        IsVisible="{Binding IsImageLocked}">
+                    <Label Text="Movement Locked"
+                           TextColor="White"
+                           FontAttributes="Bold" />
+                </Border>
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="2"
+                BackgroundColor="#D91A1A1A"
+                StrokeThickness="0"
+                StrokeShape="RoundRectangle 28">
+            <ScrollView Orientation="Vertical">
+                <VerticalStackLayout Padding="20"
+                                     Spacing="18">
+                    <Grid ColumnDefinitions="*,Auto,Auto"
+                          ColumnSpacing="12">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="{Binding ImageName}"
+                                   TextColor="#F5E7A1"
+                                   FontAttributes="Bold" />
+                            <Label Text="{Binding LockStatusText}"
+                                   TextColor="White" />
+                        </VerticalStackLayout>
+
+                        <Button Grid.Column="1"
+                                Text="{Binding LockButtonText}"
+                                Command="{Binding ToggleImageLockCommand}"
+                                BackgroundColor="#333333"
+                                TextColor="White"
+                                CornerRadius="22" />
+
+                        <Button Grid.Column="2"
+                                Text="Reset View"
+                                Command="{Binding ResetViewCommand}"
+                                BackgroundColor="#F5E7A1"
+                                TextColor="Black"
+                                CornerRadius="22" />
+                    </Grid>
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Opacity"
+                               TextColor="White"
+                               FontAttributes="Bold" />
+                        <Label Grid.Column="1"
+                               Text="{Binding ImageOpacity, StringFormat='{0:P0}'}"
+                               TextColor="White" />
+                    </Grid>
+
+                    <Slider Minimum="0.1"
+                            Maximum="1"
+                            Value="{Binding ImageOpacity}"
+                            ThumbColor="#F5E7A1"
+                            MinimumTrackColor="#F5E7A1"
+                            MaximumTrackColor="#4A4A4A" />
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Zoom"
+                               TextColor="White"
+                               FontAttributes="Bold" />
+                        <Label Grid.Column="1"
+                               Text="{Binding Zoom, StringFormat='{0:0.00}x'}"
+                               TextColor="White" />
+                    </Grid>
+
+                    <Slider Minimum="0.5"
+                            Maximum="4"
+                            Value="{Binding Zoom}"
+                            ThumbColor="#F5E7A1"
+                            MinimumTrackColor="#F5E7A1"
+                            MaximumTrackColor="#4A4A4A" />
+                </VerticalStackLayout>
+            </ScrollView>
+        </Border>
     </Grid>
 </ContentPage>
