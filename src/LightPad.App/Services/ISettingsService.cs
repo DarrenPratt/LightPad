@@ -1,3 +1,5 @@
+using LightPad.App.Models;
+
 namespace LightPad.App.Services;
 
 public interface ISettingsService
@@ -5,4 +7,8 @@ public interface ISettingsService
     double Brightness { get; set; }
 
     double ColorTemperature { get; set; }
+
+    LightColorPreset SelectedPreset { get; set; }
+
+    string CustomColorHex { get; set; }
 }

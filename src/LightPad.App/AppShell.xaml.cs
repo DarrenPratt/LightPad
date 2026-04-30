@@ -7,6 +7,11 @@ public partial class AppShell : Shell
     public AppShell()
     {
         InitializeComponent();
+        RegisterRoutes();
+    }
+
+    private static void RegisterRoutes()
+    {
         Routing.RegisterRoute(nameof(LightboxPage), typeof(LightboxPage));
         Routing.RegisterRoute(nameof(TracePage), typeof(TracePage));
         Routing.RegisterRoute(nameof(AnimationPage), typeof(AnimationPage));

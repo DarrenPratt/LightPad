@@ -1,3 +1,5 @@
+using System;
+using LightPad.App.Models;
 using Microsoft.Maui.Storage;
 
 namespace LightPad.App.Services;
@@ -6,6 +8,8 @@ public sealed class SettingsService : ISettingsService
 {
     private const string BrightnessKey = "lightpad.brightness";
     private const string ColorTemperatureKey = "lightpad.colorTemperature";
+    private const string SelectedPresetKey = "lightpad.selectedPreset";
+    private const string CustomColorHexKey = "lightpad.customColorHex";
 
     public double Brightness
     {
@@ -17,5 +21,23 @@ public sealed class SettingsService : ISettingsService
     {
         get => Preferences.Default.Get(ColorTemperatureKey, 6500.0);
         set => Preferences.Default.Set(ColorTemperatureKey, value);
+    }
+
+    public LightColorPreset SelectedPreset
+    {
+        get
+        {
+            var storedValue = Preferences.Default.Get(SelectedPresetKey, LightColorPreset.White.ToString());
+            return Enum.TryParse<LightColorPreset>(storedValue, true, out var preset)
+                ? preset
+                : LightColorPreset.White;
+        }
+        set => Preferences.Default.Set(SelectedPresetKey, value.ToString());
+    }
+
+    public string CustomColorHex
+    {
+        get => Preferences.Default.Get(CustomColorHexKey, "#FFFFFF");
+        set => Preferences.Default.Set(CustomColorHexKey, value);
     }
 }

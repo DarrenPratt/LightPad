@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:LightPad.App.ViewModels"
              x:Class="LightPad.App.Views.SettingsPage"
+             x:DataType="viewModels:SettingsViewModel"
              Title="Settings">
     <Grid>
-        <Label Text="Settings placeholder"
+        <Label Text="{Binding StatusText}"
                HorizontalOptions="Center"
                VerticalOptions="Center" />
     </Grid>
