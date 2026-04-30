@@ -7,27 +7,25 @@
              x:DataType="viewModels:TraceViewModel"
              Shell.NavBarIsVisible="False"
              BackgroundColor="#111111">
-    <Grid RowDefinitions="Auto,*,Auto"
-          Padding="12"
-          RowSpacing="12">
+    <Grid RowDefinitions="Auto,*"
+          Padding="8"
+          RowSpacing="8">
         <Grid ColumnDefinitions="Auto,*,Auto"
-              ColumnSpacing="14"
-              MaximumWidthRequest="1320"
-              HorizontalOptions="Center">
+              ColumnSpacing="10">
             <Button Text="Back"
                     Command="{Binding BackCommand}"
                     BackgroundColor="#D91A1A1A"
                     TextColor="White"
                     CornerRadius="20"
-                    Padding="18,12"
-                    MinimumHeightRequest="52" />
+                    Padding="16,10"
+                    MinimumHeightRequest="48" />
 
             <Border Grid.Column="1"
                     BackgroundColor="#D91A1A1A"
                     StrokeThickness="0"
                     StrokeShape="RoundRectangle 20">
-                <VerticalStackLayout Padding="18,12"
-                                     Spacing="6">
+                <VerticalStackLayout Padding="16,10"
+                                     Spacing="4">
                     <Label Text="Trace Image"
                            TextColor="#F5E7A1"
                            FontAttributes="Bold"
@@ -45,20 +43,17 @@
                     BackgroundColor="#F5E7A1"
                     TextColor="Black"
                     CornerRadius="20"
-                    Padding="18,12"
-                    MinimumHeightRequest="52"
-                    MinimumWidthRequest="112" />
+                    Padding="16,10"
+                    MinimumHeightRequest="48"
+                    MinimumWidthRequest="104" />
         </Grid>
 
         <Border Grid.Row="1"
                 BackgroundColor="#1A1A1A"
                 Stroke="#2E2E2E"
                 StrokeThickness="1"
-                StrokeShape="RoundRectangle 36"
-                MaximumWidthRequest="1320"
-                HorizontalOptions="Center">
-            <Grid x:Name="TraceSurface"
-                  MinimumHeightRequest="520">
+                StrokeShape="RoundRectangle 32">
+            <Grid x:Name="TraceSurface">
                 <BoxView Color="{Binding TraceBackdropColor}" />
                 <BoxView Color="Black"
                          Opacity="{Binding TraceBackdropOverlayOpacity}" />
@@ -70,10 +65,10 @@
                                           Tapped="OnTraceSurfaceDoubleTapped" />
                 </Grid.GestureRecognizers>
 
-                <Border Margin="18"
+                <Border Margin="10"
                         BackgroundColor="#F3F1E8"
                         StrokeThickness="0"
-                        StrokeShape="RoundRectangle 28" />
+                        StrokeShape="RoundRectangle 24" />
 
                 <skia:SKCanvasView x:Name="TraceCanvas"
                                    PaintSurface="OnTraceCanvasPaintSurface"
@@ -84,7 +79,7 @@
                         StrokeShape="RoundRectangle 24"
                         HorizontalOptions="Center"
                         VerticalOptions="Center"
-                        Padding="26,20"
+                        Padding="24,18"
                         IsVisible="{Binding IsEmptyStateVisible}">
                     <VerticalStackLayout Spacing="10"
                                          HorizontalOptions="Center">
@@ -100,7 +95,7 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <Border Margin="18"
+                <Border Margin="12"
                         BackgroundColor="#AA111111"
                         StrokeThickness="0"
                         StrokeShape="RoundRectangle 18"
@@ -113,7 +108,7 @@
                            FontAttributes="Bold" />
                 </Border>
 
-                <Border Margin="18"
+                <Border Margin="12"
                         BackgroundColor="#AA111111"
                         StrokeThickness="0"
                         StrokeShape="RoundRectangle 18"
@@ -122,7 +117,7 @@
                         VerticalOptions="Start">
                     <Label Text="{Binding TraceBackdropStatusText}"
                            TextColor="White"
-                           MaximumWidthRequest="280" />
+                           MaximumWidthRequest="260" />
                 </Border>
 
                 <Button Text="Show Tools"
@@ -135,124 +130,125 @@
                         MinimumWidthRequest="126"
                         HorizontalOptions="End"
                         VerticalOptions="End"
-                        Margin="20"
+                        Margin="16"
                         IsVisible="{Binding IsFloatingShowToolsVisible}" />
-            </Grid>
-        </Border>
 
-        <Border Grid.Row="2"
-                BackgroundColor="#D91A1A1A"
-                StrokeThickness="0"
-                StrokeShape="RoundRectangle 30"
-                MaximumWidthRequest="1320"
-                HorizontalOptions="Center"
-                IsVisible="{Binding IsControlsExpanded}">
-            <ScrollView Orientation="Vertical">
-                <VerticalStackLayout Padding="22"
-                                     Spacing="20">
-                    <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto"
-                          ColumnSpacing="12">
-                        <VerticalStackLayout Spacing="4">
-                            <Label Text="{Binding ImageName}"
-                                   TextColor="#F5E7A1"
-                                   FontAttributes="Bold"
-                                   FontSize="16" />
-                            <Label Text="{Binding LockStatusText}"
-                                   TextColor="White"
-                                   MaxLines="2" />
+                <Border BackgroundColor="#E0101010"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 28"
+                        HorizontalOptions="Fill"
+                        VerticalOptions="End"
+                        Margin="10"
+                        IsVisible="{Binding IsControlsExpanded}">
+                    <ScrollView Orientation="Vertical"
+                                MaximumHeightRequest="300">
+                        <VerticalStackLayout Padding="18"
+                                             Spacing="18">
+                            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto"
+                                  ColumnSpacing="10">
+                                <VerticalStackLayout Spacing="4">
+                                    <Label Text="{Binding ImageName}"
+                                           TextColor="#F5E7A1"
+                                           FontAttributes="Bold"
+                                           FontSize="16" />
+                                    <Label Text="{Binding LockStatusText}"
+                                           TextColor="White"
+                                           MaxLines="2" />
+                                </VerticalStackLayout>
+
+                                <Button Grid.Column="1"
+                                        Text="{Binding ControlsToggleText}"
+                                        Command="{Binding ToggleControlsCommand}"
+                                        BackgroundColor="#252525"
+                                        TextColor="White"
+                                        CornerRadius="22"
+                                        MinimumHeightRequest="48"
+                                        Padding="16,10" />
+
+                                <Button Grid.Column="2"
+                                        Text="{Binding LockButtonText}"
+                                        Command="{Binding ToggleImageLockCommand}"
+                                        BackgroundColor="#333333"
+                                        TextColor="White"
+                                        CornerRadius="22"
+                                        MinimumHeightRequest="48"
+                                        Padding="16,10" />
+
+                                <Button Grid.Column="3"
+                                        Text="Clear Image"
+                                        Command="{Binding ClearImageCommand}"
+                                        BackgroundColor="#5A2424"
+                                        TextColor="White"
+                                        CornerRadius="22"
+                                        MinimumHeightRequest="48"
+                                        Padding="16,10" />
+
+                                <Button Grid.Column="4"
+                                        Text="Reset View"
+                                        Command="{Binding ResetViewCommand}"
+                                        BackgroundColor="#F5E7A1"
+                                        TextColor="Black"
+                                        CornerRadius="22"
+                                        MinimumHeightRequest="48"
+                                        Padding="16,10" />
+                            </Grid>
+
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Text="Opacity"
+                                       TextColor="White"
+                                       FontAttributes="Bold" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding ImageOpacity, StringFormat='{0:P0}'}"
+                                       TextColor="White" />
+                            </Grid>
+
+                            <Slider Minimum="0.1"
+                                    Maximum="1"
+                                    Value="{Binding ImageOpacity}"
+                                    ThumbColor="#F5E7A1"
+                                    MinimumTrackColor="#F5E7A1"
+                                    MaximumTrackColor="#4A4A4A"
+                                    HeightRequest="40" />
+
+                            <Grid ColumnDefinitions="*,Auto,Auto,Auto"
+                                  ColumnSpacing="10">
+                                <Label Text="Zoom"
+                                       TextColor="White"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center" />
+                                <Button Grid.Column="1"
+                                        Text="-"
+                                        Command="{Binding ZoomOutCommand}"
+                                        BackgroundColor="#333333"
+                                        TextColor="White"
+                                        CornerRadius="20"
+                                        MinimumHeightRequest="44"
+                                        MinimumWidthRequest="52" />
+                                <Button Grid.Column="2"
+                                        Text="+"
+                                        Command="{Binding ZoomInCommand}"
+                                        BackgroundColor="#333333"
+                                        TextColor="White"
+                                        CornerRadius="20"
+                                        MinimumHeightRequest="44"
+                                        MinimumWidthRequest="52" />
+                                <Label Grid.Column="3"
+                                       Text="{Binding Zoom, StringFormat='{0:0.00}x'}"
+                                       TextColor="White"
+                                       VerticalOptions="Center" />
+                            </Grid>
+
+                            <Slider Minimum="0.5"
+                                    Maximum="4"
+                                    Value="{Binding Zoom}"
+                                    ThumbColor="#F5E7A1"
+                                    MinimumTrackColor="#F5E7A1"
+                                    MaximumTrackColor="#4A4A4A"
+                                    HeightRequest="40" />
                         </VerticalStackLayout>
-
-                        <Button Grid.Column="1"
-                                Text="{Binding ControlsToggleText}"
-                                Command="{Binding ToggleControlsCommand}"
-                                BackgroundColor="#252525"
-                                TextColor="White"
-                                CornerRadius="22"
-                                MinimumHeightRequest="50"
-                                Padding="18,12" />
-
-                        <Button Grid.Column="2"
-                                Text="{Binding LockButtonText}"
-                                Command="{Binding ToggleImageLockCommand}"
-                                BackgroundColor="#333333"
-                                TextColor="White"
-                                CornerRadius="22"
-                                MinimumHeightRequest="50"
-                                Padding="18,12" />
-
-                        <Button Grid.Column="3"
-                                Text="Clear Image"
-                                Command="{Binding ClearImageCommand}"
-                                BackgroundColor="#5A2424"
-                                TextColor="White"
-                                CornerRadius="22"
-                                MinimumHeightRequest="50"
-                                Padding="18,12" />
-
-                        <Button Grid.Column="4"
-                                Text="Reset View"
-                                Command="{Binding ResetViewCommand}"
-                                BackgroundColor="#F5E7A1"
-                                TextColor="Black"
-                                CornerRadius="22"
-                                MinimumHeightRequest="50"
-                                Padding="18,12" />
-                    </Grid>
-
-                    <Grid ColumnDefinitions="*,Auto">
-                        <Label Text="Opacity"
-                               TextColor="White"
-                               FontAttributes="Bold" />
-                        <Label Grid.Column="1"
-                               Text="{Binding ImageOpacity, StringFormat='{0:P0}'}"
-                               TextColor="White" />
-                    </Grid>
-
-                    <Slider Minimum="0.1"
-                            Maximum="1"
-                            Value="{Binding ImageOpacity}"
-                            ThumbColor="#F5E7A1"
-                            MinimumTrackColor="#F5E7A1"
-                            MaximumTrackColor="#4A4A4A"
-                            HeightRequest="40" />
-
-                    <Grid ColumnDefinitions="*,Auto,Auto,Auto"
-                          ColumnSpacing="12">
-                        <Label Text="Zoom"
-                               TextColor="White"
-                               FontAttributes="Bold"
-                               VerticalOptions="Center" />
-                        <Button Grid.Column="1"
-                                Text="-"
-                                Command="{Binding ZoomOutCommand}"
-                                BackgroundColor="#333333"
-                                TextColor="White"
-                                CornerRadius="20"
-                                MinimumHeightRequest="46"
-                                MinimumWidthRequest="52" />
-                        <Button Grid.Column="2"
-                                Text="+"
-                                Command="{Binding ZoomInCommand}"
-                                BackgroundColor="#333333"
-                                TextColor="White"
-                                CornerRadius="20"
-                                MinimumHeightRequest="46"
-                                MinimumWidthRequest="52" />
-                        <Label Grid.Column="3"
-                               Text="{Binding Zoom, StringFormat='{0:0.00}x'}"
-                               TextColor="White"
-                               VerticalOptions="Center" />
-                    </Grid>
-
-                    <Slider Minimum="0.5"
-                            Maximum="4"
-                            Value="{Binding Zoom}"
-                            ThumbColor="#F5E7A1"
-                            MinimumTrackColor="#F5E7A1"
-                            MaximumTrackColor="#4A4A4A"
-                            HeightRequest="40" />
-                </VerticalStackLayout>
-            </ScrollView>
+                    </ScrollView>
+                </Border>
+            </Grid>
         </Border>
     </Grid>
 </ContentPage>
