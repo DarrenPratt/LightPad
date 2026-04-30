@@ -1,0 +1,23 @@
+{
+  "universe_usage_history": [
+    {
+      "assignment_id": "lightpad-2026-04-30-initial",
+      "universe": "Alien",
+      "timestamp": "2026-04-30T17:38:50.646Z"
+    }
+  ],
+  "assignment_cast_snapshots": {
+    "lightpad-2026-04-30-initial": {
+      "project": "LightPad",
+      "timestamp": "2026-04-30T17:38:50.646Z",
+      "universe": "Alien",
+      "members": [
+        "ripley",
+        "hicks",
+        "bishop",
+        "lambert",
+        "parker"
+      ]
+    }
+  }
+}
