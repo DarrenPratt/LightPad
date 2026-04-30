@@ -2,15 +2,6 @@ name: Build Windows Artifact
 
 on:
   workflow_dispatch:
-    inputs:
-      runtime:
-        description: Windows runtime identifier for the downloadable app artifact
-        required: true
-        default: win-x64
-        type: choice
-        options:
-          - win-x64
-          - win-arm64
 
 permissions:
   contents: read
@@ -23,8 +14,8 @@ jobs:
       DOTNET_VERSION: 10.0.x
       TARGET_FRAMEWORK: net10.0-windows10.0.19041.0
       CONFIGURATION: Release
-      RUNTIME: ${{ inputs.runtime || 'win-x64' }}
-      PUBLISH_DIR: ${{ github.workspace }}\artifacts\LightPad
+      BUILD_OUTPUT_DIR: ${{ github.workspace }}\src\LightPad.App\bin\Release\net10.0-windows10.0.19041.0\win-x64
+      ARTIFACT_DIR: ${{ github.workspace }}\artifacts\LightPad-win-x64
 
     steps:
       - name: Checkout
@@ -41,25 +32,23 @@ jobs:
       - name: Restore solution
         run: dotnet restore LightPad.sln
 
-      - name: Publish Windows app
+      - name: Build Windows app
         run: >
-          dotnet publish src\LightPad.App\LightPad.App.csproj
+          dotnet build LightPad.sln
           -c $env:CONFIGURATION
           -f $env:TARGET_FRAMEWORK
-          -r $env:RUNTIME
-          -o $env:PUBLISH_DIR
-          /p:WindowsPackageType=None
-          /p:WindowsAppSDKSelfContained=true
-          /p:SelfContained=true
 
-      - name: Add run instructions
+      - name: Stage artifact contents
         shell: pwsh
         run: |
+          New-Item -ItemType Directory -Force -Path $env:ARTIFACT_DIR | Out-Null
+          Copy-Item -Path "$env:BUILD_OUTPUT_DIR\*" -Destination $env:ARTIFACT_DIR -Recurse -Force
           @"
           LightPad Windows artifact
 
-          Runtime: $env:RUNTIME
+          Build: Release
           Framework: $env:TARGET_FRAMEWORK
+          Output layout: unpackaged build folder from bin\Release
 
           Steps:
           1. Download and extract this artifact on the Surface.
@@ -67,15 +56,16 @@ jobs:
           3. Run LightPad.App.exe.
 
           Notes:
-          - This is an unpackaged Windows build produced by GitHub Actions.
+          - This workflow currently packages the validated win-x64 build output.
+          - On Windows on ARM, try this under x64 emulation if needed.
           - If Windows Smart App Control or another application control policy blocks it,
             allow the app or disable that policy on the target device first.
-          "@ | Set-Content -Path "$env:PUBLISH_DIR\RUN_ON_SURFACE.txt"
+          "@ | Set-Content -Path "$env:ARTIFACT_DIR\RUN_ON_SURFACE.txt"
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
-          name: lightpad-${{ env.RUNTIME }}
-          path: ${{ env.PUBLISH_DIR }}
+          name: lightpad-win-x64
+          path: ${{ env.ARTIFACT_DIR }}
           if-no-files-found: error
           retention-days: 14
