@@ -26,6 +26,7 @@ public sealed class TraceViewModel : BaseViewModel
     private string? _imagePath;
     private string _statusMessage;
     private bool _isBusy;
+    private bool _isControlsExpanded = true;
     private double _surfaceBrightness;
     private double _surfaceColorTemperature;
     private LightColorPreset _surfacePreset;
@@ -65,6 +66,7 @@ public sealed class TraceViewModel : BaseViewModel
         ClearImageCommand = new Command(ClearImage, () => HasImage && !IsBusy);
         ZoomOutCommand = new Command(() => NudgeZoom(-0.15), () => HasImage && !IsBusy);
         ZoomInCommand = new Command(() => NudgeZoom(0.15), () => HasImage && !IsBusy);
+        ToggleControlsCommand = new Command(ToggleControls);
     }
 
     public TraceSessionState SessionState { get; }
@@ -82,6 +84,8 @@ public sealed class TraceViewModel : BaseViewModel
     public Command ZoomOutCommand { get; }
 
     public Command ZoomInCommand { get; }
+
+    public Command ToggleControlsCommand { get; }
 
     public string? ImagePath
     {
@@ -204,7 +208,26 @@ public sealed class TraceViewModel : BaseViewModel
 
     public bool CanManipulateImage => HasImage && !IsImageLocked;
 
+    public bool IsControlsExpanded
+    {
+        get => _isControlsExpanded;
+        private set
+        {
+            if (!SetProperty(ref _isControlsExpanded, value))
+            {
+                return;
+            }
+
+            OnPropertyChanged(nameof(ControlsToggleText));
+            OnPropertyChanged(nameof(IsFloatingShowToolsVisible));
+        }
+    }
+
+    public bool IsFloatingShowToolsVisible => !IsControlsExpanded;
+
     public string LockButtonText => IsImageLocked ? "Unlock Image" : "Lock Image";
+
+    public string ControlsToggleText => IsControlsExpanded ? "Hide Tools" : "Show Tools";
 
     public string LockStatusText
     {
@@ -349,6 +372,11 @@ public sealed class TraceViewModel : BaseViewModel
         }
 
         Zoom += delta;
+    }
+
+    private void ToggleControls()
+    {
+        IsControlsExpanded = !IsControlsExpanded;
     }
 
     private void UpdateStatusMessage(string? overrideMessage = null)

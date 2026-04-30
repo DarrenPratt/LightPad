@@ -8,11 +8,11 @@
              Shell.NavBarIsVisible="False"
              BackgroundColor="#111111">
     <Grid RowDefinitions="Auto,*,Auto"
-          Padding="20"
-          RowSpacing="16">
+          Padding="12"
+          RowSpacing="12">
         <Grid ColumnDefinitions="Auto,*,Auto"
               ColumnSpacing="14"
-              MaximumWidthRequest="1100"
+              MaximumWidthRequest="1320"
               HorizontalOptions="Center">
             <Button Text="Back"
                     Command="{Binding BackCommand}"
@@ -55,10 +55,10 @@
                 Stroke="#2E2E2E"
                 StrokeThickness="1"
                 StrokeShape="RoundRectangle 36"
-                MaximumWidthRequest="1100"
+                MaximumWidthRequest="1320"
                 HorizontalOptions="Center">
             <Grid x:Name="TraceSurface"
-                  MinimumHeightRequest="460">
+                  MinimumHeightRequest="520">
                 <BoxView Color="{Binding TraceBackdropColor}" />
                 <BoxView Color="Black"
                          Opacity="{Binding TraceBackdropOverlayOpacity}" />
@@ -70,7 +70,7 @@
                                           Tapped="OnTraceSurfaceDoubleTapped" />
                 </Grid.GestureRecognizers>
 
-                <Border Margin="24"
+                <Border Margin="18"
                         BackgroundColor="#F3F1E8"
                         StrokeThickness="0"
                         StrokeShape="RoundRectangle 28" />
@@ -100,7 +100,7 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <Border Margin="24"
+                <Border Margin="18"
                         BackgroundColor="#AA111111"
                         StrokeThickness="0"
                         StrokeShape="RoundRectangle 18"
@@ -113,7 +113,7 @@
                            FontAttributes="Bold" />
                 </Border>
 
-                <Border Margin="24"
+                <Border Margin="18"
                         BackgroundColor="#AA111111"
                         StrokeThickness="0"
                         StrokeShape="RoundRectangle 18"
@@ -124,6 +124,19 @@
                            TextColor="White"
                            MaximumWidthRequest="280" />
                 </Border>
+
+                <Button Text="Show Tools"
+                        Command="{Binding ToggleControlsCommand}"
+                        BackgroundColor="#D9F5E7A1"
+                        TextColor="Black"
+                        CornerRadius="24"
+                        Padding="18,12"
+                        MinimumHeightRequest="50"
+                        MinimumWidthRequest="126"
+                        HorizontalOptions="End"
+                        VerticalOptions="End"
+                        Margin="20"
+                        IsVisible="{Binding IsFloatingShowToolsVisible}" />
             </Grid>
         </Border>
 
@@ -131,24 +144,34 @@
                 BackgroundColor="#D91A1A1A"
                 StrokeThickness="0"
                 StrokeShape="RoundRectangle 30"
-                MaximumWidthRequest="1100"
-                HorizontalOptions="Center">
+                MaximumWidthRequest="1320"
+                HorizontalOptions="Center"
+                IsVisible="{Binding IsControlsExpanded}">
             <ScrollView Orientation="Vertical">
                 <VerticalStackLayout Padding="22"
                                      Spacing="20">
-                    <Grid ColumnDefinitions="*,Auto,Auto,Auto"
+                    <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto"
                           ColumnSpacing="12">
                         <VerticalStackLayout Spacing="4">
                             <Label Text="{Binding ImageName}"
                                    TextColor="#F5E7A1"
                                    FontAttributes="Bold"
-                                   FontSize="17" />
+                                   FontSize="16" />
                             <Label Text="{Binding LockStatusText}"
                                    TextColor="White"
                                    MaxLines="2" />
                         </VerticalStackLayout>
 
                         <Button Grid.Column="1"
+                                Text="{Binding ControlsToggleText}"
+                                Command="{Binding ToggleControlsCommand}"
+                                BackgroundColor="#252525"
+                                TextColor="White"
+                                CornerRadius="22"
+                                MinimumHeightRequest="50"
+                                Padding="18,12" />
+
+                        <Button Grid.Column="2"
                                 Text="{Binding LockButtonText}"
                                 Command="{Binding ToggleImageLockCommand}"
                                 BackgroundColor="#333333"
@@ -157,7 +180,7 @@
                                 MinimumHeightRequest="50"
                                 Padding="18,12" />
 
-                        <Button Grid.Column="2"
+                        <Button Grid.Column="3"
                                 Text="Clear Image"
                                 Command="{Binding ClearImageCommand}"
                                 BackgroundColor="#5A2424"
@@ -166,7 +189,7 @@
                                 MinimumHeightRequest="50"
                                 Padding="18,12" />
 
-                        <Button Grid.Column="3"
+                        <Button Grid.Column="4"
                                 Text="Reset View"
                                 Command="{Binding ResetViewCommand}"
                                 BackgroundColor="#F5E7A1"
