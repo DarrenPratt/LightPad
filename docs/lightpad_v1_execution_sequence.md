@@ -64,6 +64,8 @@ Exit criteria:
 
 ### Phase 1: Deliver the plain lightbox first
 
+Status: Complete on 2026-04-30.
+
 Goal: ship the smallest valuable workflow.
 
 Work:
