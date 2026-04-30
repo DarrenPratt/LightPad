@@ -1,0 +1,81 @@
+name: Build Windows Artifact
+
+on:
+  workflow_dispatch:
+    inputs:
+      runtime:
+        description: Windows runtime identifier for the downloadable app artifact
+        required: true
+        default: win-x64
+        type: choice
+        options:
+          - win-x64
+          - win-arm64
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows-artifact:
+    runs-on: windows-latest
+
+    env:
+      DOTNET_VERSION: 10.0.x
+      TARGET_FRAMEWORK: net10.0-windows10.0.19041.0
+      CONFIGURATION: Release
+      RUNTIME: ${{ inputs.runtime || 'win-x64' }}
+      PUBLISH_DIR: ${{ github.workspace }}\artifacts\LightPad
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install MAUI workload
+        run: dotnet workload install maui
+
+      - name: Restore solution
+        run: dotnet restore LightPad.sln
+
+      - name: Publish Windows app
+        run: >
+          dotnet publish src\LightPad.App\LightPad.App.csproj
+          -c $env:CONFIGURATION
+          -f $env:TARGET_FRAMEWORK
+          -r $env:RUNTIME
+          -o $env:PUBLISH_DIR
+          /p:WindowsPackageType=None
+          /p:WindowsAppSDKSelfContained=true
+          /p:SelfContained=true
+
+      - name: Add run instructions
+        shell: pwsh
+        run: |
+          @"
+          LightPad Windows artifact
+
+          Runtime: $env:RUNTIME
+          Framework: $env:TARGET_FRAMEWORK
+
+          Steps:
+          1. Download and extract this artifact on the Surface.
+          2. Open the extracted folder.
+          3. Run LightPad.App.exe.
+
+          Notes:
+          - This is an unpackaged Windows build produced by GitHub Actions.
+          - If Windows Smart App Control or another application control policy blocks it,
+            allow the app or disable that policy on the target device first.
+          "@ | Set-Content -Path "$env:PUBLISH_DIR\RUN_ON_SURFACE.txt"
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lightpad-${{ env.RUNTIME }}
+          path: ${{ env.PUBLISH_DIR }}
+          if-no-files-found: error
+          retention-days: 14
