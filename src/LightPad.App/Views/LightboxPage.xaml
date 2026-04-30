@@ -19,39 +19,46 @@
         <Border IsVisible="{Binding IsLockedHintVisible}"
                 BackgroundColor="#BF101010"
                 StrokeThickness="0"
-                StrokeShape="RoundRectangle 24"
+                StrokeShape="RoundRectangle 26"
                 HorizontalOptions="Center"
                 VerticalOptions="Center"
-                Padding="20,14"
+                Padding="22,16"
                 InputTransparent="True">
             <Label Text="Locked. Tap once to reveal controls."
                    TextColor="White"
-                   FontAttributes="Bold" />
+                   FontAttributes="Bold"
+                   FontSize="18" />
         </Border>
 
-        <Grid Padding="16"
+        <Grid Padding="20"
               RowDefinitions="Auto,*,Auto"
+              RowSpacing="16"
               IsVisible="{Binding IsChromeVisible}">
-            <Grid ColumnDefinitions="Auto,*,Auto">
+            <Grid ColumnDefinitions="Auto,*,Auto"
+                  ColumnSpacing="14"
+                  MaximumWidthRequest="1100"
+                  HorizontalOptions="Center">
                 <Button Text="Back"
                         Command="{Binding BackCommand}"
                         BackgroundColor="#D91A1A1A"
                         TextColor="White"
-                        CornerRadius="18"
-                        Padding="16,10" />
+                        CornerRadius="20"
+                        Padding="18,12"
+                        MinimumHeightRequest="52" />
 
                 <Border Grid.Column="1"
-                        Margin="16,0"
                         BackgroundColor="#D91A1A1A"
                         StrokeThickness="0"
-                        StrokeShape="RoundRectangle 18">
+                        StrokeShape="RoundRectangle 20">
                     <Label Text="{Binding StatusText}"
                            HorizontalOptions="Center"
                            VerticalOptions="Center"
                            HorizontalTextAlignment="Center"
                            TextColor="White"
                            FontAttributes="Bold"
-                           Padding="16,10" />
+                           FontSize="17"
+                           Padding="18,12"
+                           MaxLines="2" />
                 </Border>
 
                 <Button Grid.Column="2"
@@ -59,39 +66,45 @@
                         Command="{Binding ToggleLockCommand}"
                         BackgroundColor="#D91A1A1A"
                         TextColor="White"
-                        CornerRadius="18"
-                        Padding="16,10"
+                        CornerRadius="20"
+                        Padding="18,12"
+                        MinimumHeightRequest="52"
+                        MinimumWidthRequest="132"
                         IsVisible="{Binding CanShowEditControls}" />
 
                 <Border Grid.Column="2"
                         BackgroundColor="#D91A1A1A"
                         StrokeThickness="0"
-                        StrokeShape="RoundRectangle 18"
+                        StrokeShape="RoundRectangle 20"
                         IsVisible="{Binding IsUnlockPanelVisible}"
-                        Padding="16,10">
+                        Padding="18,12">
                     <Label Text="Locked"
                            TextColor="White"
-                           FontAttributes="Bold" />
+                           FontAttributes="Bold"
+                           FontSize="16" />
                 </Border>
             </Grid>
 
             <VerticalStackLayout Grid.Row="2"
-                                 Spacing="12">
+                                 Spacing="12"
+                                 MaximumWidthRequest="760"
+                                 HorizontalOptions="Center">
                 <Border BackgroundColor="#D91A1A1A"
                         StrokeThickness="0"
                         StrokeShape="RoundRectangle 24">
                     <Label Text="{Binding LockStatusText}"
                            TextColor="White"
-                           Padding="18,12" />
+                           Padding="18,12"
+                           HorizontalTextAlignment="Center" />
                 </Border>
 
                 <Border BackgroundColor="#D91A1A1A"
                         StrokeThickness="0"
-                        StrokeShape="RoundRectangle 28"
+                        StrokeShape="RoundRectangle 30"
                         IsVisible="{Binding CanShowEditControls}">
                     <ScrollView>
-                        <VerticalStackLayout Padding="20"
-                                             Spacing="18">
+                        <VerticalStackLayout Padding="22"
+                                             Spacing="20">
                             <Grid ColumnDefinitions="*,Auto">
                                 <Label Text="Brightness"
                                        TextColor="White"
@@ -106,7 +119,8 @@
                                     Value="{Binding Brightness}"
                                     ThumbColor="#F5E7A1"
                                     MinimumTrackColor="#F5E7A1"
-                                    MaximumTrackColor="#4A4A4A" />
+                                    MaximumTrackColor="#4A4A4A"
+                                    HeightRequest="40" />
 
                             <Grid ColumnDefinitions="*,Auto">
                                 <Label Text="White Temperature"
@@ -123,7 +137,8 @@
                                     IsEnabled="{Binding CanAdjustColorTemperature}"
                                     ThumbColor="#F5E7A1"
                                     MinimumTrackColor="#F5E7A1"
-                                    MaximumTrackColor="#4A4A4A" />
+                                    MaximumTrackColor="#4A4A4A"
+                                    HeightRequest="40" />
 
                             <Label Text="Presets"
                                    TextColor="White"
@@ -138,7 +153,8 @@
                                         CommandParameter="White"
                                         BackgroundColor="{Binding WhitePresetBackground}"
                                         TextColor="{Binding WhitePresetTextColor}"
-                                        CornerRadius="22" />
+                                        CornerRadius="22"
+                                        MinimumHeightRequest="48" />
 
                                 <Button Grid.Column="1"
                                         Text="Warm"
@@ -146,7 +162,8 @@
                                         CommandParameter="Warm"
                                         BackgroundColor="{Binding WarmPresetBackground}"
                                         TextColor="{Binding WarmPresetTextColor}"
-                                        CornerRadius="22" />
+                                        CornerRadius="22"
+                                        MinimumHeightRequest="48" />
 
                                 <Button Grid.Row="1"
                                         Text="Cool"
@@ -154,7 +171,8 @@
                                         CommandParameter="Cool"
                                         BackgroundColor="{Binding CoolPresetBackground}"
                                         TextColor="{Binding CoolPresetTextColor}"
-                                        CornerRadius="22" />
+                                        CornerRadius="22"
+                                        MinimumHeightRequest="48" />
 
                                 <Button Grid.Row="1"
                                         Grid.Column="1"
@@ -163,7 +181,8 @@
                                         CommandParameter="Custom"
                                         BackgroundColor="{Binding CustomPresetBackground}"
                                         TextColor="{Binding CustomPresetTextColor}"
-                                        CornerRadius="22" />
+                                        CornerRadius="22"
+                                        MinimumHeightRequest="48" />
                             </Grid>
 
                             <VerticalStackLayout Spacing="10"
@@ -180,14 +199,17 @@
                                            PlaceholderColor="#CCFFFFFF"
                                            BackgroundColor="#26000000"
                                            ClearButtonVisibility="WhileEditing"
-                                           ReturnType="Done" />
+                                           ReturnType="Done"
+                                           HeightRequest="48" />
 
                                     <Button Grid.Column="1"
                                             Text="Apply"
                                             Command="{Binding ApplyCustomColorCommand}"
                                             BackgroundColor="#F5E7A1"
                                             TextColor="Black"
-                                            CornerRadius="22" />
+                                            CornerRadius="22"
+                                            MinimumHeightRequest="48"
+                                            Padding="18,12" />
                                 </Grid>
 
                                 <Label Text="{Binding AppliedCustomColorHex}"
@@ -200,12 +222,13 @@
 
                 <Border BackgroundColor="#D91A1A1A"
                         StrokeThickness="0"
-                        StrokeShape="RoundRectangle 28"
+                        StrokeShape="RoundRectangle 30"
                         IsVisible="{Binding IsUnlockPanelVisible}">
-                    <VerticalStackLayout Padding="20"
-                                         Spacing="12">
+                    <VerticalStackLayout Padding="22"
+                                         Spacing="14">
                         <Label Text="Unlock requires a press-and-hold so incidental taps do not reopen editing."
-                               TextColor="White" />
+                               TextColor="White"
+                               HorizontalTextAlignment="Center" />
 
                         <Button Text="{Binding UnlockButtonText}"
                                 Pressed="OnUnlockButtonPressed"
@@ -213,11 +236,14 @@
                                 Unloaded="OnUnlockButtonUnloaded"
                                 BackgroundColor="#F5E7A1"
                                 TextColor="Black"
-                                CornerRadius="24" />
+                                CornerRadius="24"
+                                MinimumHeightRequest="52"
+                                Padding="18,12" />
 
                         <ProgressBar Progress="{Binding UnlockProgress}"
                                      ProgressColor="#F5E7A1"
-                                     BackgroundColor="#4A4A4A" />
+                                     BackgroundColor="#4A4A4A"
+                                     HeightRequest="10" />
                     </VerticalStackLayout>
                 </Border>
             </VerticalStackLayout>

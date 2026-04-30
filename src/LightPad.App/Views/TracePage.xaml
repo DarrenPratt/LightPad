@@ -8,29 +8,34 @@
              Shell.NavBarIsVisible="False"
              BackgroundColor="#111111">
     <Grid RowDefinitions="Auto,*,Auto"
-          Padding="16"
-          RowSpacing="14">
+          Padding="20"
+          RowSpacing="16">
         <Grid ColumnDefinitions="Auto,*,Auto"
-              ColumnSpacing="12">
+              ColumnSpacing="14"
+              MaximumWidthRequest="1100"
+              HorizontalOptions="Center">
             <Button Text="Back"
                     Command="{Binding BackCommand}"
                     BackgroundColor="#D91A1A1A"
                     TextColor="White"
-                    CornerRadius="18"
-                    Padding="16,10" />
+                    CornerRadius="20"
+                    Padding="18,12"
+                    MinimumHeightRequest="52" />
 
             <Border Grid.Column="1"
                     BackgroundColor="#D91A1A1A"
                     StrokeThickness="0"
-                    StrokeShape="RoundRectangle 18">
-                <VerticalStackLayout Padding="16,10"
-                                     Spacing="4">
+                    StrokeShape="RoundRectangle 20">
+                <VerticalStackLayout Padding="18,12"
+                                     Spacing="6">
                     <Label Text="Trace Image"
                            TextColor="#F5E7A1"
-                           FontAttributes="Bold" />
+                           FontAttributes="Bold"
+                           FontSize="18" />
                     <Label Text="{Binding StatusText}"
                            TextColor="White"
-                           LineBreakMode="TailTruncation" />
+                           LineBreakMode="TailTruncation"
+                           MaxLines="2" />
                 </VerticalStackLayout>
             </Border>
 
@@ -39,16 +44,21 @@
                     Command="{Binding ImportImageCommand}"
                     BackgroundColor="#F5E7A1"
                     TextColor="Black"
-                    CornerRadius="18"
-                    Padding="16,10" />
+                    CornerRadius="20"
+                    Padding="18,12"
+                    MinimumHeightRequest="52"
+                    MinimumWidthRequest="112" />
         </Grid>
 
         <Border Grid.Row="1"
                 BackgroundColor="#1A1A1A"
                 Stroke="#2E2E2E"
                 StrokeThickness="1"
-                StrokeShape="RoundRectangle 32">
-            <Grid x:Name="TraceSurface">
+                StrokeShape="RoundRectangle 36"
+                MaximumWidthRequest="1100"
+                HorizontalOptions="Center">
+            <Grid x:Name="TraceSurface"
+                  MinimumHeightRequest="460">
                 <BoxView Color="{Binding TraceBackdropColor}" />
                 <BoxView Color="Black"
                          Opacity="{Binding TraceBackdropOverlayOpacity}" />
@@ -60,10 +70,10 @@
                                           Tapped="OnTraceSurfaceDoubleTapped" />
                 </Grid.GestureRecognizers>
 
-                <Border Margin="20"
+                <Border Margin="24"
                         BackgroundColor="#F3F1E8"
                         StrokeThickness="0"
-                        StrokeShape="RoundRectangle 24" />
+                        StrokeShape="RoundRectangle 28" />
 
                 <skia:SKCanvasView x:Name="TraceCanvas"
                                    PaintSurface="OnTraceCanvasPaintSurface"
@@ -74,22 +84,23 @@
                         StrokeShape="RoundRectangle 24"
                         HorizontalOptions="Center"
                         VerticalOptions="Center"
-                        Padding="24,18"
+                        Padding="26,20"
                         IsVisible="{Binding IsEmptyStateVisible}">
                     <VerticalStackLayout Spacing="10"
                                          HorizontalOptions="Center">
                         <Label Text="No reference image yet"
                                TextColor="White"
                                FontAttributes="Bold"
-                               HorizontalTextAlignment="Center" />
-                        <Label Text="Import one image. Then drag to move it, pinch to scale it, or adjust opacity below."
+                               HorizontalTextAlignment="Center"
+                               FontSize="18" />
+                        <Label Text="Import one image. Then drag to move it, pinch to scale it, use the zoom step buttons, or adjust opacity below."
                                TextColor="#DDFFFFFF"
                                HorizontalTextAlignment="Center"
-                               MaximumWidthRequest="320" />
+                               MaximumWidthRequest="360" />
                     </VerticalStackLayout>
                 </Border>
 
-                <Border Margin="20"
+                <Border Margin="24"
                         BackgroundColor="#AA111111"
                         StrokeThickness="0"
                         StrokeShape="RoundRectangle 18"
@@ -102,7 +113,7 @@
                            FontAttributes="Bold" />
                 </Border>
 
-                <Border Margin="20"
+                <Border Margin="24"
                         BackgroundColor="#AA111111"
                         StrokeThickness="0"
                         StrokeShape="RoundRectangle 18"
@@ -111,7 +122,7 @@
                         VerticalOptions="Start">
                     <Label Text="{Binding TraceBackdropStatusText}"
                            TextColor="White"
-                           MaximumWidthRequest="260" />
+                           MaximumWidthRequest="280" />
                 </Border>
             </Grid>
         </Border>
@@ -119,18 +130,22 @@
         <Border Grid.Row="2"
                 BackgroundColor="#D91A1A1A"
                 StrokeThickness="0"
-                StrokeShape="RoundRectangle 28">
+                StrokeShape="RoundRectangle 30"
+                MaximumWidthRequest="1100"
+                HorizontalOptions="Center">
             <ScrollView Orientation="Vertical">
-                <VerticalStackLayout Padding="20"
-                                     Spacing="18">
+                <VerticalStackLayout Padding="22"
+                                     Spacing="20">
                     <Grid ColumnDefinitions="*,Auto,Auto,Auto"
                           ColumnSpacing="12">
                         <VerticalStackLayout Spacing="4">
                             <Label Text="{Binding ImageName}"
                                    TextColor="#F5E7A1"
-                                   FontAttributes="Bold" />
+                                   FontAttributes="Bold"
+                                   FontSize="17" />
                             <Label Text="{Binding LockStatusText}"
-                                   TextColor="White" />
+                                   TextColor="White"
+                                   MaxLines="2" />
                         </VerticalStackLayout>
 
                         <Button Grid.Column="1"
@@ -138,21 +153,27 @@
                                 Command="{Binding ToggleImageLockCommand}"
                                 BackgroundColor="#333333"
                                 TextColor="White"
-                                CornerRadius="22" />
+                                CornerRadius="22"
+                                MinimumHeightRequest="50"
+                                Padding="18,12" />
 
                         <Button Grid.Column="2"
                                 Text="Clear Image"
                                 Command="{Binding ClearImageCommand}"
                                 BackgroundColor="#5A2424"
                                 TextColor="White"
-                                CornerRadius="22" />
+                                CornerRadius="22"
+                                MinimumHeightRequest="50"
+                                Padding="18,12" />
 
                         <Button Grid.Column="3"
                                 Text="Reset View"
                                 Command="{Binding ResetViewCommand}"
                                 BackgroundColor="#F5E7A1"
                                 TextColor="Black"
-                                CornerRadius="22" />
+                                CornerRadius="22"
+                                MinimumHeightRequest="50"
+                                Padding="18,12" />
                     </Grid>
 
                     <Grid ColumnDefinitions="*,Auto">
@@ -169,15 +190,35 @@
                             Value="{Binding ImageOpacity}"
                             ThumbColor="#F5E7A1"
                             MinimumTrackColor="#F5E7A1"
-                            MaximumTrackColor="#4A4A4A" />
+                            MaximumTrackColor="#4A4A4A"
+                            HeightRequest="40" />
 
-                    <Grid ColumnDefinitions="*,Auto">
+                    <Grid ColumnDefinitions="*,Auto,Auto,Auto"
+                          ColumnSpacing="12">
                         <Label Text="Zoom"
                                TextColor="White"
-                               FontAttributes="Bold" />
-                        <Label Grid.Column="1"
+                               FontAttributes="Bold"
+                               VerticalOptions="Center" />
+                        <Button Grid.Column="1"
+                                Text="-"
+                                Command="{Binding ZoomOutCommand}"
+                                BackgroundColor="#333333"
+                                TextColor="White"
+                                CornerRadius="20"
+                                MinimumHeightRequest="46"
+                                MinimumWidthRequest="52" />
+                        <Button Grid.Column="2"
+                                Text="+"
+                                Command="{Binding ZoomInCommand}"
+                                BackgroundColor="#333333"
+                                TextColor="White"
+                                CornerRadius="20"
+                                MinimumHeightRequest="46"
+                                MinimumWidthRequest="52" />
+                        <Label Grid.Column="3"
                                Text="{Binding Zoom, StringFormat='{0:0.00}x'}"
-                               TextColor="White" />
+                               TextColor="White"
+                               VerticalOptions="Center" />
                     </Grid>
 
                     <Slider Minimum="0.5"
@@ -185,7 +226,8 @@
                             Value="{Binding Zoom}"
                             ThumbColor="#F5E7A1"
                             MinimumTrackColor="#F5E7A1"
-                            MaximumTrackColor="#4A4A4A" />
+                            MaximumTrackColor="#4A4A4A"
+                            HeightRequest="40" />
                 </VerticalStackLayout>
             </ScrollView>
         </Border>

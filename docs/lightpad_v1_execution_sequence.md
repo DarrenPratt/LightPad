@@ -184,6 +184,8 @@ Exit criteria:
 
 ### Phase 5: Windows-first usability pass
 
+Status: Complete on 2026-04-30.
+
 Goal: make the MVP actually usable on the primary validation platform.
 
 Work:

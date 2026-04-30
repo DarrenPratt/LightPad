@@ -63,6 +63,8 @@ public sealed class TraceViewModel : BaseViewModel
         ResetViewCommand = new Command(ResetView, () => HasImage && !IsBusy);
         ToggleImageLockCommand = new Command(ToggleImageLock, () => HasImage && !IsBusy);
         ClearImageCommand = new Command(ClearImage, () => HasImage && !IsBusy);
+        ZoomOutCommand = new Command(() => NudgeZoom(-0.15), () => HasImage && !IsBusy);
+        ZoomInCommand = new Command(() => NudgeZoom(0.15), () => HasImage && !IsBusy);
     }
 
     public TraceSessionState SessionState { get; }
@@ -76,6 +78,10 @@ public sealed class TraceViewModel : BaseViewModel
     public Command ToggleImageLockCommand { get; }
 
     public Command ClearImageCommand { get; }
+
+    public Command ZoomOutCommand { get; }
+
+    public Command ZoomInCommand { get; }
 
     public string? ImagePath
     {
@@ -315,6 +321,8 @@ public sealed class TraceViewModel : BaseViewModel
         ResetViewCommand.ChangeCanExecute();
         ToggleImageLockCommand.ChangeCanExecute();
         ClearImageCommand.ChangeCanExecute();
+        ZoomOutCommand.ChangeCanExecute();
+        ZoomInCommand.ChangeCanExecute();
     }
 
     private void ClearImage()
@@ -331,6 +339,16 @@ public sealed class TraceViewModel : BaseViewModel
         ImageOpacity = _settingsService.DefaultTraceOpacity;
         IsImageLocked = false;
         UpdateStatusMessage("Trace image cleared. Import a new reference image to continue.");
+    }
+
+    private void NudgeZoom(double delta)
+    {
+        if (!HasImage)
+        {
+            return;
+        }
+
+        Zoom += delta;
     }
 
     private void UpdateStatusMessage(string? overrideMessage = null)
