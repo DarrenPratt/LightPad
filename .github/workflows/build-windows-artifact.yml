@@ -2,9 +2,18 @@ name: Build Windows Artifact
 
 on:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Optional Git tag for the downloadable release asset
+        required: false
+        type: string
+      release_name:
+        description: Optional GitHub Release title
+        required: false
+        type: string
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-windows-artifact:
@@ -16,6 +25,7 @@ jobs:
       CONFIGURATION: Release
       BUILD_OUTPUT_DIR: ${{ github.workspace }}\src\LightPad.App\bin\Release\net10.0-windows10.0.19041.0\win-x64
       ARTIFACT_DIR: ${{ github.workspace }}\artifacts\LightPad-win-x64
+      ZIP_PATH: ${{ github.workspace }}\artifacts\lightpad-win-x64.zip
 
     steps:
       - name: Checkout
@@ -62,6 +72,25 @@ jobs:
             allow the app or disable that policy on the target device first.
           "@ | Set-Content -Path "$env:ARTIFACT_DIR\RUN_ON_SURFACE.txt"
 
+      - name: Create zip package
+        shell: pwsh
+        run: |
+          if (Test-Path $env:ZIP_PATH) {
+            Remove-Item $env:ZIP_PATH -Force
+          }
+          Compress-Archive -Path "$env:ARTIFACT_DIR\*" -DestinationPath $env:ZIP_PATH
+
+      - name: Resolve release metadata
+        id: release_meta
+        shell: pwsh
+        run: |
+          $tagInput = "${{ inputs.release_tag }}"
+          $nameInput = "${{ inputs.release_name }}"
+          $tag = if ([string]::IsNullOrWhiteSpace($tagInput)) { "surface-build-${{ github.run_number }}" } else { $tagInput.Trim() }
+          $name = if ([string]::IsNullOrWhiteSpace($nameInput)) { "Surface build $tag" } else { $nameInput.Trim() }
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          "name=$name" >> $env:GITHUB_OUTPUT
+
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
@@ -69,3 +98,13 @@ jobs:
           path: ${{ env.ARTIFACT_DIR }}
           if-no-files-found: error
           retention-days: 14
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release_meta.outputs.tag }}
+          name: ${{ steps.release_meta.outputs.name }}
+          draft: false
+          prerelease: true
+          generate_release_notes: true
+          files: ${{ env.ZIP_PATH }}
