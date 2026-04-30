@@ -10,6 +10,7 @@ public sealed class SettingsService : ISettingsService
     private const string ColorTemperatureKey = "lightpad.colorTemperature";
     private const string SelectedPresetKey = "lightpad.selectedPreset";
     private const string CustomColorHexKey = "lightpad.customColorHex";
+    private const string DefaultTraceOpacityKey = "lightpad.defaultTraceOpacity";
 
     public double Brightness
     {
@@ -39,5 +40,11 @@ public sealed class SettingsService : ISettingsService
     {
         get => Preferences.Default.Get(CustomColorHexKey, "#FFFFFF");
         set => Preferences.Default.Set(CustomColorHexKey, value);
+    }
+
+    public double DefaultTraceOpacity
+    {
+        get => Preferences.Default.Get(DefaultTraceOpacityKey, 0.65);
+        set => Preferences.Default.Set(DefaultTraceOpacityKey, value);
     }
 }

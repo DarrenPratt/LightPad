@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using LightPad.App.Models;
 using LightPad.App.Services;
+using LightPad.App.Utilities;
 using Microsoft.Maui.Graphics;
 
 namespace LightPad.App.ViewModels;
@@ -36,10 +37,10 @@ public sealed class LightboxViewModel : BaseViewModel
     {
         _settingsService = settingsService;
         _screenWakeService = screenWakeService;
-        _brightness = Clamp(settingsService.Brightness, MinBrightness, MaxBrightness);
-        _colorTemperature = Clamp(settingsService.ColorTemperature, MinColorTemperature, MaxColorTemperature);
+        _brightness = LightSurfaceStyleCalculator.Clamp(settingsService.Brightness, MinBrightness, MaxBrightness);
+        _colorTemperature = LightSurfaceStyleCalculator.Clamp(settingsService.ColorTemperature, MinColorTemperature, MaxColorTemperature);
         _selectedPreset = settingsService.SelectedPreset;
-        _appliedCustomColorHex = NormalizeHexOrDefault(settingsService.CustomColorHex, "#FFFFFF");
+        _appliedCustomColorHex = LightSurfaceStyleCalculator.NormalizeHexOrDefault(settingsService.CustomColorHex, "#FFFFFF");
         _customColorHexInput = _appliedCustomColorHex;
 
         BackCommand = new Command(async () => await Shell.Current.GoToAsync(".."));
@@ -66,7 +67,7 @@ public sealed class LightboxViewModel : BaseViewModel
                 return;
             }
 
-            var clampedValue = Clamp(value, MinBrightness, MaxBrightness);
+            var clampedValue = LightSurfaceStyleCalculator.Clamp(value, MinBrightness, MaxBrightness);
             if (!SetProperty(ref _brightness, clampedValue))
             {
                 return;
@@ -87,7 +88,7 @@ public sealed class LightboxViewModel : BaseViewModel
                 return;
             }
 
-            var clampedValue = Clamp(value, MinColorTemperature, MaxColorTemperature);
+            var clampedValue = LightSurfaceStyleCalculator.Clamp(value, MinColorTemperature, MaxColorTemperature);
             if (!SetProperty(ref _colorTemperature, clampedValue))
             {
                 return;
@@ -230,13 +231,7 @@ public sealed class LightboxViewModel : BaseViewModel
         ? $"Hold to Unlock {UnlockProgress:P0}"
         : "Hold to Unlock";
 
-    public Color LightColor => SelectedPreset switch
-    {
-        LightColorPreset.Warm => Color.FromArgb("#FFD6A3"),
-        LightColorPreset.Cool => Color.FromArgb("#DDF1FF"),
-        LightColorPreset.Custom => ParseColorOrDefault(_appliedCustomColorHex, Colors.White),
-        _ => FromColorTemperature(ColorTemperature)
-    };
+    public Color LightColor => LightSurfaceStyleCalculator.ResolveLightColor(SelectedPreset, ColorTemperature, _appliedCustomColorHex);
 
     public double BrightnessOverlayOpacity => 1.0 - Brightness;
 
@@ -395,7 +390,7 @@ public sealed class LightboxViewModel : BaseViewModel
             return;
         }
 
-        var normalizedColor = NormalizeHexOrDefault(CustomColorHexInput, _appliedCustomColorHex);
+        var normalizedColor = LightSurfaceStyleCalculator.NormalizeHexOrDefault(CustomColorHexInput, _appliedCustomColorHex);
         _appliedCustomColorHex = normalizedColor;
         _settingsService.CustomColorHex = normalizedColor;
 
@@ -472,92 +467,4 @@ public sealed class LightboxViewModel : BaseViewModel
         SelectPresetCommand.ChangeCanExecute();
     }
 
-    private static double Clamp(double value, double minimum, double maximum)
-    {
-        return Math.Min(maximum, Math.Max(minimum, value));
-    }
-
-    private static string NormalizeHexOrDefault(string? value, string fallback)
-    {
-        if (TryNormalizeHex(value, out var normalized))
-        {
-            return normalized;
-        }
-
-        return fallback;
-    }
-
-    private static bool TryNormalizeHex(string? value, out string normalized)
-    {
-        normalized = string.Empty;
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return false;
-        }
-
-        var trimmed = value.Trim();
-        if (!trimmed.StartsWith('#'))
-        {
-            trimmed = $"#{trimmed}";
-        }
-
-        if (trimmed.Length != 7)
-        {
-            return false;
-        }
-
-        for (var index = 1; index < trimmed.Length; index++)
-        {
-            if (!Uri.IsHexDigit(trimmed[index]))
-            {
-                return false;
-            }
-        }
-
-        normalized = trimmed.ToUpperInvariant();
-        return true;
-    }
-
-    private static Color ParseColorOrDefault(string? colorHex, Color fallback)
-    {
-        if (!string.IsNullOrWhiteSpace(colorHex) && Color.TryParse(colorHex, out var parsedColor))
-        {
-            return parsedColor;
-        }
-
-        return fallback;
-    }
-
-    private static Color FromColorTemperature(double kelvin)
-    {
-        var temperature = kelvin / 100.0;
-        double red;
-        double green;
-        double blue;
-
-        if (temperature <= 66.0)
-        {
-            red = 255.0;
-            green = 99.4708025861 * Math.Log(temperature) - 161.1195681661;
-            blue = temperature <= 19.0
-                ? 0.0
-                : 138.5177312231 * Math.Log(temperature - 10.0) - 305.0447927307;
-        }
-        else
-        {
-            red = 329.698727446 * Math.Pow(temperature - 60.0, -0.1332047592);
-            green = 288.1221695283 * Math.Pow(temperature - 60.0, -0.0755148492);
-            blue = 255.0;
-        }
-
-        return Color.FromRgb(
-            ClampToByte(red),
-            ClampToByte(green),
-            ClampToByte(blue));
-    }
-
-    private static int ClampToByte(double value)
-    {
-        return (int)Math.Round(Math.Min(255.0, Math.Max(0.0, value)));
-    }
 }

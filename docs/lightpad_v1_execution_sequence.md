@@ -157,6 +157,8 @@ Exit criteria:
 
 ### Phase 4: Unify settings and trace controls
 
+Status: Complete on 2026-04-30.
+
 Goal: make the two main workflows feel like one product rather than two demos.
 
 Work:

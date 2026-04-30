@@ -11,4 +11,6 @@ public interface ISettingsService
     LightColorPreset SelectedPreset { get; set; }
 
     string CustomColorHex { get; set; }
+
+    double DefaultTraceOpacity { get; set; }
 }

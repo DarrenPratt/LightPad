@@ -4,7 +4,9 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using LightPad.App.Models;
 using LightPad.App.Services;
+using LightPad.App.Utilities;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 
 namespace LightPad.App.ViewModels;
 
@@ -14,6 +16,7 @@ public sealed class TraceViewModel : BaseViewModel
     private const double MaxZoom = 4.0;
     private readonly IImagePickerService _imagePickerService;
     private readonly IScreenWakeService _screenWakeService;
+    private readonly ISettingsService _settingsService;
     private readonly TraceImageState _activeImage;
     private double _offsetX;
     private double _offsetY;
@@ -23,28 +26,43 @@ public sealed class TraceViewModel : BaseViewModel
     private string? _imagePath;
     private string _statusMessage;
     private bool _isBusy;
+    private double _surfaceBrightness;
+    private double _surfaceColorTemperature;
+    private LightColorPreset _surfacePreset;
+    private string _surfaceCustomColorHex;
 
     public TraceViewModel(
         TraceSessionState sessionState,
         IScreenWakeService screenWakeService,
-        IImagePickerService imagePickerService)
+        IImagePickerService imagePickerService,
+        ISettingsService settingsService)
     {
         SessionState = sessionState;
         _screenWakeService = screenWakeService;
         _imagePickerService = imagePickerService;
+        _settingsService = settingsService;
         _activeImage = sessionState.ActiveImage;
         _imagePath = _activeImage.FilePath;
         _offsetX = _activeImage.OffsetX;
         _offsetY = _activeImage.OffsetY;
-        _zoom = Clamp(_activeImage.Zoom, MinZoom, MaxZoom);
-        _imageOpacity = Clamp(_activeImage.Opacity, 0.1, 1.0);
+        _zoom = LightSurfaceStyleCalculator.Clamp(_activeImage.Zoom, MinZoom, MaxZoom);
+        _imageOpacity = LightSurfaceStyleCalculator.Clamp(
+            _activeImage.FilePath is null ? settingsService.DefaultTraceOpacity : _activeImage.Opacity,
+            0.1,
+            1.0);
         _isImageLocked = _activeImage.IsLocked;
+        _surfaceBrightness = LightSurfaceStyleCalculator.Clamp(settingsService.Brightness, 0.05, 1.0);
+        _surfaceColorTemperature = LightSurfaceStyleCalculator.Clamp(settingsService.ColorTemperature, 2700.0, 9000.0);
+        _surfacePreset = settingsService.SelectedPreset;
+        _surfaceCustomColorHex = LightSurfaceStyleCalculator.NormalizeHexOrDefault(settingsService.CustomColorHex, "#FFFFFF");
         _statusMessage = CreateStatusMessage();
+        _activeImage.Opacity = _imageOpacity;
 
         BackCommand = new Command(async () => await Shell.Current.GoToAsync(".."));
         ImportImageCommand = new Command(async () => await ImportImageAsync(), () => !IsBusy);
         ResetViewCommand = new Command(ResetView, () => HasImage && !IsBusy);
         ToggleImageLockCommand = new Command(ToggleImageLock, () => HasImage && !IsBusy);
+        ClearImageCommand = new Command(ClearImage, () => HasImage && !IsBusy);
     }
 
     public TraceSessionState SessionState { get; }
@@ -56,6 +74,8 @@ public sealed class TraceViewModel : BaseViewModel
     public Command ResetViewCommand { get; }
 
     public Command ToggleImageLockCommand { get; }
+
+    public Command ClearImageCommand { get; }
 
     public string? ImagePath
     {
@@ -116,7 +136,7 @@ public sealed class TraceViewModel : BaseViewModel
         get => _zoom;
         set
         {
-            var clampedValue = Clamp(value, MinZoom, MaxZoom);
+            var clampedValue = LightSurfaceStyleCalculator.Clamp(value, MinZoom, MaxZoom);
             if (!SetProperty(ref _zoom, clampedValue))
             {
                 return;
@@ -132,7 +152,7 @@ public sealed class TraceViewModel : BaseViewModel
         get => _imageOpacity;
         set
         {
-            var clampedValue = Clamp(value, 0.1, 1.0);
+            var clampedValue = LightSurfaceStyleCalculator.Clamp(value, 0.1, 1.0);
             if (!SetProperty(ref _imageOpacity, clampedValue))
             {
                 return;
@@ -195,6 +215,13 @@ public sealed class TraceViewModel : BaseViewModel
         }
     }
 
+    public Color TraceBackdropColor => LightSurfaceStyleCalculator.ResolveLightColor(_surfacePreset, _surfaceColorTemperature, _surfaceCustomColorHex);
+
+    public double TraceBackdropOverlayOpacity => 1.0 - _surfaceBrightness;
+
+    public string TraceBackdropStatusText =>
+        $"Trace background reuses the global {_surfacePreset} light defaults at {_surfaceBrightness:P0} brightness.";
+
     public string StatusText => _statusMessage;
 
     public async Task OnAppearingAsync()
@@ -247,6 +274,7 @@ public sealed class TraceViewModel : BaseViewModel
             }
 
             ImagePath = selectedImagePath;
+            ImageOpacity = _settingsService.DefaultTraceOpacity;
             ResetView();
             UpdateStatusMessage($"Loaded {Path.GetFileName(selectedImagePath)} for tracing.");
         }
@@ -286,6 +314,23 @@ public sealed class TraceViewModel : BaseViewModel
         ImportImageCommand.ChangeCanExecute();
         ResetViewCommand.ChangeCanExecute();
         ToggleImageLockCommand.ChangeCanExecute();
+        ClearImageCommand.ChangeCanExecute();
+    }
+
+    private void ClearImage()
+    {
+        if (!HasImage)
+        {
+            return;
+        }
+
+        ImagePath = null;
+        OffsetX = 0.0;
+        OffsetY = 0.0;
+        Zoom = 1.0;
+        ImageOpacity = _settingsService.DefaultTraceOpacity;
+        IsImageLocked = false;
+        UpdateStatusMessage("Trace image cleared. Import a new reference image to continue.");
     }
 
     private void UpdateStatusMessage(string? overrideMessage = null)
@@ -302,10 +347,5 @@ public sealed class TraceViewModel : BaseViewModel
         }
 
         return $"{ImageName}: zoom {Zoom:0.00}x, opacity {ImageOpacity:P0}, offset ({OffsetX:0}, {OffsetY:0}).";
-    }
-
-    private static double Clamp(double value, double minimum, double maximum)
-    {
-        return Math.Min(maximum, Math.Max(minimum, value));
     }
 }

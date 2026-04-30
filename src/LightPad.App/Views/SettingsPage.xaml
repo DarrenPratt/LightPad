@@ -4,10 +4,221 @@
              xmlns:viewModels="clr-namespace:LightPad.App.ViewModels"
              x:Class="LightPad.App.Views.SettingsPage"
              x:DataType="viewModels:SettingsViewModel"
-             Title="Settings">
-    <Grid>
-        <Label Text="{Binding StatusText}"
-               HorizontalOptions="Center"
-               VerticalOptions="Center" />
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#111111">
+    <Grid RowDefinitions="Auto,*"
+          Padding="16"
+          RowSpacing="14">
+        <Grid ColumnDefinitions="Auto,*,Auto"
+              ColumnSpacing="12">
+            <Button Text="Back"
+                    Command="{Binding BackCommand}"
+                    BackgroundColor="#D91A1A1A"
+                    TextColor="White"
+                    CornerRadius="18"
+                    Padding="16,10" />
+
+            <Border Grid.Column="1"
+                    BackgroundColor="#D91A1A1A"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 18">
+                <VerticalStackLayout Padding="16,10"
+                                     Spacing="4">
+                    <Label Text="Settings"
+                           TextColor="#F5E7A1"
+                           FontAttributes="Bold" />
+                    <Label Text="{Binding StatusText}"
+                           TextColor="White"
+                           LineBreakMode="TailTruncation" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Button Grid.Column="2"
+                    Text="Reset"
+                    Command="{Binding ResetDefaultsCommand}"
+                    BackgroundColor="#F5E7A1"
+                    TextColor="Black"
+                    CornerRadius="18"
+                    Padding="16,10" />
+        </Grid>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="16">
+                <Border BackgroundColor="#D91A1A1A"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 28">
+                    <VerticalStackLayout Padding="20"
+                                         Spacing="16">
+                        <Label Text="Light Surface Defaults"
+                               TextColor="#F5E7A1"
+                               FontAttributes="Bold"
+                               FontSize="18" />
+
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="Brightness"
+                                   TextColor="White"
+                                   FontAttributes="Bold" />
+                            <Label Grid.Column="1"
+                                   Text="{Binding Brightness, StringFormat='{0:P0}'}"
+                                   TextColor="White" />
+                        </Grid>
+
+                        <Slider Minimum="0.05"
+                                Maximum="1"
+                                Value="{Binding Brightness}"
+                                ThumbColor="#F5E7A1"
+                                MinimumTrackColor="#F5E7A1"
+                                MaximumTrackColor="#4A4A4A" />
+
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="White Temperature"
+                                   TextColor="White"
+                                   FontAttributes="Bold" />
+                            <Label Grid.Column="1"
+                                   Text="{Binding ColorTemperature, StringFormat='{0:0}K'}"
+                                   TextColor="White" />
+                        </Grid>
+
+                        <Slider Minimum="2700"
+                                Maximum="9000"
+                                Value="{Binding ColorTemperature}"
+                                IsEnabled="{Binding CanAdjustColorTemperature}"
+                                ThumbColor="#F5E7A1"
+                                MinimumTrackColor="#F5E7A1"
+                                MaximumTrackColor="#4A4A4A" />
+
+                        <Label Text="Preset"
+                               TextColor="White"
+                               FontAttributes="Bold" />
+
+                        <Grid ColumnDefinitions="*,*"
+                              ColumnSpacing="12"
+                              RowDefinitions="Auto,Auto"
+                              RowSpacing="12">
+                            <Button Text="White"
+                                    Command="{Binding SelectPresetCommand}"
+                                    CommandParameter="White"
+                                    BackgroundColor="{Binding WhitePresetBackground}"
+                                    TextColor="{Binding WhitePresetTextColor}"
+                                    CornerRadius="22" />
+
+                            <Button Grid.Column="1"
+                                    Text="Warm"
+                                    Command="{Binding SelectPresetCommand}"
+                                    CommandParameter="Warm"
+                                    BackgroundColor="{Binding WarmPresetBackground}"
+                                    TextColor="{Binding WarmPresetTextColor}"
+                                    CornerRadius="22" />
+
+                            <Button Grid.Row="1"
+                                    Text="Cool"
+                                    Command="{Binding SelectPresetCommand}"
+                                    CommandParameter="Cool"
+                                    BackgroundColor="{Binding CoolPresetBackground}"
+                                    TextColor="{Binding CoolPresetTextColor}"
+                                    CornerRadius="22" />
+
+                            <Button Grid.Row="1"
+                                    Grid.Column="1"
+                                    Text="Custom"
+                                    Command="{Binding SelectPresetCommand}"
+                                    CommandParameter="Custom"
+                                    BackgroundColor="{Binding CustomPresetBackground}"
+                                    TextColor="{Binding CustomPresetTextColor}"
+                                    CornerRadius="22" />
+                        </Grid>
+
+                        <VerticalStackLayout Spacing="10">
+                            <Label Text="Custom Hex Colour"
+                                   TextColor="White"
+                                   FontAttributes="Bold" />
+
+                            <Grid ColumnDefinitions="*,Auto"
+                                  ColumnSpacing="12">
+                                <Entry Text="{Binding CustomColorHexInput}"
+                                       Placeholder="#FFFFFF"
+                                       TextColor="White"
+                                       PlaceholderColor="#CCFFFFFF"
+                                       BackgroundColor="#26000000"
+                                       ClearButtonVisibility="WhileEditing"
+                                       ReturnType="Done" />
+
+                                <Button Grid.Column="1"
+                                        Text="Apply"
+                                        Command="{Binding ApplyCustomColorCommand}"
+                                        BackgroundColor="#F5E7A1"
+                                        TextColor="Black"
+                                        CornerRadius="22" />
+                            </Grid>
+
+                            <Label Text="{Binding AppliedCustomColorHex}"
+                                   TextColor="White"
+                                   FontSize="12" />
+                        </VerticalStackLayout>
+
+                        <Grid HeightRequest="140"
+                              Margin="0,8,0,0">
+                            <BoxView Color="{Binding PreviewLightColor}" />
+                            <BoxView Color="Black"
+                                     Opacity="{Binding PreviewOverlayOpacity}" />
+                            <Border BackgroundColor="#AA111111"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 18"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center">
+                                <Label Text="Live preview used by Lightbox and Trace background"
+                                       TextColor="White"
+                                       Padding="16,10" />
+                            </Border>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border BackgroundColor="#D91A1A1A"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 28">
+                    <VerticalStackLayout Padding="20"
+                                         Spacing="16">
+                        <Label Text="Trace Defaults"
+                               TextColor="#F5E7A1"
+                               FontAttributes="Bold"
+                               FontSize="18" />
+
+                        <Label Text="Starting opacity for newly imported trace images."
+                               TextColor="White" />
+
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="Default Trace Opacity"
+                                   TextColor="White"
+                                   FontAttributes="Bold" />
+                            <Label Grid.Column="1"
+                                   Text="{Binding DefaultTraceOpacity, StringFormat='{0:P0}'}"
+                                   TextColor="White" />
+                        </Grid>
+
+                        <Slider Minimum="0.1"
+                                Maximum="1"
+                                Value="{Binding DefaultTraceOpacity}"
+                                ThumbColor="#F5E7A1"
+                                MinimumTrackColor="#F5E7A1"
+                                MaximumTrackColor="#4A4A4A" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border BackgroundColor="#D91A1A1A"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 28">
+                    <VerticalStackLayout Padding="20"
+                                         Spacing="10">
+                        <Label Text="Global vs Session"
+                               TextColor="#F5E7A1"
+                               FontAttributes="Bold"
+                               FontSize="18" />
+                        <Label Text="{Binding ScopeSummaryText}"
+                               TextColor="White" />
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
     </Grid>
 </ContentPage>

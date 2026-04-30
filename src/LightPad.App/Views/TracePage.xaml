@@ -49,6 +49,10 @@
                 StrokeThickness="1"
                 StrokeShape="RoundRectangle 32">
             <Grid x:Name="TraceSurface">
+                <BoxView Color="{Binding TraceBackdropColor}" />
+                <BoxView Color="Black"
+                         Opacity="{Binding TraceBackdropOverlayOpacity}" />
+
                 <Grid.GestureRecognizers>
                     <PanGestureRecognizer PanUpdated="OnImagePanUpdated" />
                     <PinchGestureRecognizer PinchUpdated="OnImagePinchUpdated" />
@@ -97,6 +101,18 @@
                            TextColor="White"
                            FontAttributes="Bold" />
                 </Border>
+
+                <Border Margin="20"
+                        BackgroundColor="#AA111111"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 18"
+                        Padding="14,10"
+                        HorizontalOptions="Start"
+                        VerticalOptions="Start">
+                    <Label Text="{Binding TraceBackdropStatusText}"
+                           TextColor="White"
+                           MaximumWidthRequest="260" />
+                </Border>
             </Grid>
         </Border>
 
@@ -107,7 +123,7 @@
             <ScrollView Orientation="Vertical">
                 <VerticalStackLayout Padding="20"
                                      Spacing="18">
-                    <Grid ColumnDefinitions="*,Auto,Auto"
+                    <Grid ColumnDefinitions="*,Auto,Auto,Auto"
                           ColumnSpacing="12">
                         <VerticalStackLayout Spacing="4">
                             <Label Text="{Binding ImageName}"
@@ -125,6 +141,13 @@
                                 CornerRadius="22" />
 
                         <Button Grid.Column="2"
+                                Text="Clear Image"
+                                Command="{Binding ClearImageCommand}"
+                                BackgroundColor="#5A2424"
+                                TextColor="White"
+                                CornerRadius="22" />
+
+                        <Button Grid.Column="3"
                                 Text="Reset View"
                                 Command="{Binding ResetViewCommand}"
                                 BackgroundColor="#F5E7A1"
