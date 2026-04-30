@@ -93,6 +93,8 @@ Exit criteria:
 
 ### Phase 2: Add screen-awake and immersive behavior
 
+Status: Complete on 2026-04-30.
+
 Goal: make lightbox mode practical during real use.
 
 Work:

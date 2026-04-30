@@ -7,13 +7,31 @@
              Shell.NavBarIsVisible="False"
              BackgroundColor="Black">
     <Grid>
+        <Grid.GestureRecognizers>
+            <TapGestureRecognizer Tapped="OnLightSurfaceTapped" />
+        </Grid.GestureRecognizers>
+
         <BoxView Color="{Binding LightColor}" />
         <BoxView Color="Black"
                  Opacity="{Binding BrightnessOverlayOpacity}"
                  InputTransparent="True" />
 
+        <Border IsVisible="{Binding IsLockedHintVisible}"
+                BackgroundColor="#BF101010"
+                StrokeThickness="0"
+                StrokeShape="RoundRectangle 24"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                Padding="20,14"
+                InputTransparent="True">
+            <Label Text="Locked. Tap once to reveal controls."
+                   TextColor="White"
+                   FontAttributes="Bold" />
+        </Border>
+
         <Grid Padding="16"
-              RowDefinitions="Auto,*,Auto">
+              RowDefinitions="Auto,*,Auto"
+              IsVisible="{Binding IsChromeVisible}">
             <Grid ColumnDefinitions="Auto,*,Auto">
                 <Button Text="Back"
                         Command="{Binding BackCommand}"
@@ -42,7 +60,19 @@
                         BackgroundColor="#D91A1A1A"
                         TextColor="White"
                         CornerRadius="18"
-                        Padding="16,10" />
+                        Padding="16,10"
+                        IsVisible="{Binding CanShowEditControls}" />
+
+                <Border Grid.Column="2"
+                        BackgroundColor="#D91A1A1A"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 18"
+                        IsVisible="{Binding IsUnlockPanelVisible}"
+                        Padding="16,10">
+                    <Label Text="Locked"
+                           TextColor="White"
+                           FontAttributes="Bold" />
+                </Border>
             </Grid>
 
             <VerticalStackLayout Grid.Row="2"
@@ -58,7 +88,7 @@
                 <Border BackgroundColor="#D91A1A1A"
                         StrokeThickness="0"
                         StrokeShape="RoundRectangle 28"
-                        IsVisible="{Binding IsControlsVisible}">
+                        IsVisible="{Binding CanShowEditControls}">
                     <ScrollView>
                         <VerticalStackLayout Padding="20"
                                              Spacing="18">
@@ -166,6 +196,29 @@
                             </VerticalStackLayout>
                         </VerticalStackLayout>
                     </ScrollView>
+                </Border>
+
+                <Border BackgroundColor="#D91A1A1A"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 28"
+                        IsVisible="{Binding IsUnlockPanelVisible}">
+                    <VerticalStackLayout Padding="20"
+                                         Spacing="12">
+                        <Label Text="Unlock requires a press-and-hold so incidental taps do not reopen editing."
+                               TextColor="White" />
+
+                        <Button Text="{Binding UnlockButtonText}"
+                                Pressed="OnUnlockButtonPressed"
+                                Released="OnUnlockButtonReleased"
+                                Unloaded="OnUnlockButtonUnloaded"
+                                BackgroundColor="#F5E7A1"
+                                TextColor="Black"
+                                CornerRadius="24" />
+
+                        <ProgressBar Progress="{Binding UnlockProgress}"
+                                     ProgressColor="#F5E7A1"
+                                     BackgroundColor="#4A4A4A" />
+                    </VerticalStackLayout>
                 </Border>
             </VerticalStackLayout>
         </Grid>

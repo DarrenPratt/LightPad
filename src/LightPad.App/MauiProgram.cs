@@ -21,6 +21,7 @@ public static class MauiProgram
 			});
 
 		builder.Services.AddSingleton<ISettingsService, SettingsService>();
+		builder.Services.AddSingleton<IScreenWakeService, ScreenWakeService>();
 		builder.Services.AddSingleton<TraceSessionState>();
 		builder.Services.AddTransient<MainViewModel>();
 		builder.Services.AddTransient<LightboxViewModel>();
