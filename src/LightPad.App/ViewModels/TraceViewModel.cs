@@ -29,6 +29,8 @@ public sealed class TraceViewModel : BaseViewModel
     private string _statusMessage;
     private bool _isBusy;
     private bool _isControlsExpanded = true;
+    private bool _isGridVisible;
+    private double _gridSpacing;
     private double _surfaceBrightness;
     private double _surfaceColorTemperature;
     private LightColorPreset _surfacePreset;
@@ -55,6 +57,8 @@ public sealed class TraceViewModel : BaseViewModel
             0.1,
             1.0);
         _isImageLocked = _activeImage.IsLocked;
+        _isGridVisible = sessionState.GridVisible;
+        _gridSpacing = LightSurfaceStyleCalculator.Clamp(sessionState.GridSpacing, MinGridSpacing, MaxGridSpacing);
         _surfaceBrightness = LightSurfaceStyleCalculator.Clamp(settingsService.Brightness, 0.05, 1.0);
         _surfaceColorTemperature = LightSurfaceStyleCalculator.Clamp(settingsService.ColorTemperature, 2700.0, 9000.0);
         _surfacePreset = settingsService.SelectedPreset;
@@ -62,6 +66,7 @@ public sealed class TraceViewModel : BaseViewModel
         _statusMessage = CreateStatusMessage();
         _activeImage.Rotation = _rotation;
         _activeImage.Opacity = _imageOpacity;
+        SessionState.GridSpacing = _gridSpacing;
 
         BackCommand = new Command(async () => await Shell.Current.GoToAsync(".."));
         ImportImageCommand = new Command(async () => await ImportImageAsync(), () => !IsBusy);
@@ -235,6 +240,38 @@ public sealed class TraceViewModel : BaseViewModel
 
     public bool CanManipulateImage => HasImage && !IsImageLocked;
 
+    public bool IsGridVisible
+    {
+        get => _isGridVisible;
+        set
+        {
+            if (!SetProperty(ref _isGridVisible, value))
+            {
+                return;
+            }
+
+            SessionState.GridVisible = value;
+            OnPropertyChanged(nameof(GridButtonText));
+            UpdateStatusMessage();
+        }
+    }
+
+    public double GridSpacing
+    {
+        get => _gridSpacing;
+        set
+        {
+            var clampedValue = LightSurfaceStyleCalculator.Clamp(value, MinGridSpacing, MaxGridSpacing);
+            if (!SetProperty(ref _gridSpacing, clampedValue))
+            {
+                return;
+            }
+
+            SessionState.GridSpacing = clampedValue;
+            UpdateStatusMessage();
+        }
+    }
+
     public bool IsControlsExpanded
     {
         get => _isControlsExpanded;
@@ -253,6 +290,8 @@ public sealed class TraceViewModel : BaseViewModel
     public bool IsFloatingShowToolsVisible => !IsControlsExpanded;
 
     public string LockButtonText => IsImageLocked ? "Unlock Image" : "Lock Image";
+
+    public string GridButtonText => IsGridVisible ? "Hide Grid" : "Show Grid";
 
     public string ControlsToggleText => IsControlsExpanded ? "Hide Tools" : "Show Tools";
 
@@ -418,6 +457,11 @@ public sealed class TraceViewModel : BaseViewModel
     private void ToggleControls()
     {
         IsControlsExpanded = !IsControlsExpanded;
+    }
+
+    private void ToggleGrid()
+    {
+        IsGridVisible = !IsGridVisible;
     }
 
     private void UpdateStatusMessage(string? overrideMessage = null)

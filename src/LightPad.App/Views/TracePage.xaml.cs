@@ -82,6 +82,8 @@ public partial class TracePage : ContentPage
             or nameof(TraceViewModel.Zoom)
             or nameof(TraceViewModel.RotationAngle)
             or nameof(TraceViewModel.ImageOpacity)
+            or nameof(TraceViewModel.IsGridVisible)
+            or nameof(TraceViewModel.GridSpacing)
             or nameof(TraceViewModel.IsImageLocked))
         {
             TraceCanvas.InvalidateSurface();
@@ -104,6 +106,8 @@ public partial class TracePage : ContentPage
             24f,
             24f);
         canvas.DrawRoundRect(paperBounds, paperPaint);
+
+        DrawGrid(canvas, paperBounds);
 
         if (_traceBitmap is null || !_viewModel.HasImage)
         {
