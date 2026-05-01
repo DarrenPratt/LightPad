@@ -4,25 +4,234 @@
              xmlns:viewModels="clr-namespace:LightPad.App.ViewModels"
              x:Class="LightPad.App.Views.MainPage"
              x:DataType="viewModels:MainViewModel"
-             Title="LightPad">
+             Title="LightPad"
+             BackgroundColor="#F4EBDD">
 
-    <VerticalStackLayout Padding="24" Spacing="12">
-        <Label Text="LightPad"
-               FontSize="28"
-               HorizontalOptions="Center"
-               FontAttributes="Bold" />
+    <Grid RowDefinitions="Auto,*">
+        <Grid Padding="24,32,24,22">
+            <Grid.Background>
+                <LinearGradientBrush StartPoint="0,0"
+                                     EndPoint="1,1">
+                    <GradientStop Color="#F8F1E8"
+                                  Offset="0.0" />
+                    <GradientStop Color="#E7D8C0"
+                                  Offset="1.0" />
+                </LinearGradientBrush>
+            </Grid.Background>
+            <VerticalStackLayout Spacing="10">
+                <Border BackgroundColor="#FFF7EE"
+                        Stroke="#D8C2A4"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 18"
+                        Padding="10,6"
+                        HorizontalOptions="Start">
+                    <Label Text="DIGITAL LIGHTBOX"
+                           TextColor="#7A5B34"
+                           FontSize="12"
+                           FontAttributes="Bold" />
+                </Border>
 
-        <Button Text="Plain Lightbox"
-                Command="{Binding OpenLightboxCommand}" />
+                <Label Text="LightPad"
+                       FontSize="34"
+                       FontAttributes="Bold"
+                       TextColor="#24160D" />
 
-        <Button Text="Trace Image"
-                Command="{Binding OpenTraceImageCommand}" />
+                <Label Text="Tracing, reference alignment, and animation planning in one workspace."
+                       TextColor="#5E4B3B"
+                       FontSize="16"
+                       MaximumWidthRequest="420" />
+            </VerticalStackLayout>
+        </Grid>
 
-        <Button Text="Animation Frames"
-                Command="{Binding OpenAnimationFramesCommand}" />
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="20,18,20,24"
+                                 Spacing="16">
+                <Grid ColumnDefinitions="*,*"
+                      RowDefinitions="Auto,Auto"
+                      ColumnSpacing="16"
+                      RowSpacing="16">
+                    <Border Grid.Row="0"
+                            Grid.Column="0"
+                            BackgroundColor="#FFF9F2"
+                            Stroke="#D8C4AA"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 28"
+                            MinimumHeightRequest="178"
+                            Padding="18">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding OpenLightboxCommand}" />
+                        </Border.GestureRecognizers>
+                        <Grid RowDefinitions="Auto,*,Auto">
+                            <Border BackgroundColor="#F5E7A1"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 18"
+                                    HeightRequest="56"
+                                    WidthRequest="56"
+                                    HorizontalOptions="Start">
+                                <Image Source="icon_lightbox.svg"
+                                       HeightRequest="28"
+                                       WidthRequest="28"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center" />
+                            </Border>
 
-        <Button Text="Settings"
-                Command="{Binding OpenSettingsCommand}" />
-    </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Row="1"
+                                                 Spacing="8"
+                                                 VerticalOptions="End">
+                                <Label Text="Plain Lightbox"
+                                       FontSize="20"
+                                       FontAttributes="Bold"
+                                       TextColor="#24160D" />
+                                <Label Text="Full-screen light surface with brightness and colour controls."
+                                       TextColor="#6D5846"
+                                       FontSize="14" />
+                            </VerticalStackLayout>
+
+                            <Label Grid.Row="2"
+                                   Text="Open mode"
+                                   TextColor="#8B6A43"
+                                   FontAttributes="Bold"
+                                   FontSize="13" />
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Row="0"
+                            Grid.Column="1"
+                            BackgroundColor="#FFF9F2"
+                            Stroke="#D8C4AA"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 28"
+                            MinimumHeightRequest="178"
+                            Padding="18">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding OpenTraceImageCommand}" />
+                        </Border.GestureRecognizers>
+                        <Grid RowDefinitions="Auto,*,Auto">
+                            <Border BackgroundColor="#E8C7A5"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 18"
+                                    HeightRequest="56"
+                                    WidthRequest="56"
+                                    HorizontalOptions="Start">
+                                <Image Source="icon_trace.svg"
+                                       HeightRequest="28"
+                                       WidthRequest="28"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center" />
+                            </Border>
+
+                            <VerticalStackLayout Grid.Row="1"
+                                                 Spacing="8"
+                                                 VerticalOptions="End">
+                                <Label Text="Trace Image"
+                                       FontSize="20"
+                                       FontAttributes="Bold"
+                                       TextColor="#24160D" />
+                                <Label Text="Import a reference image, then pan, zoom, and fade it for tracing."
+                                       TextColor="#6D5846"
+                                       FontSize="14" />
+                            </VerticalStackLayout>
+
+                            <Label Grid.Row="2"
+                                   Text="Open mode"
+                                   TextColor="#8B6A43"
+                                   FontAttributes="Bold"
+                                   FontSize="13" />
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Row="1"
+                            Grid.Column="0"
+                            BackgroundColor="#FFF9F2"
+                            Stroke="#D8C4AA"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 28"
+                            MinimumHeightRequest="178"
+                            Padding="18">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding OpenAnimationFramesCommand}" />
+                        </Border.GestureRecognizers>
+                        <Grid RowDefinitions="Auto,*,Auto">
+                            <Border BackgroundColor="#C9D9C0"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 18"
+                                    HeightRequest="56"
+                                    WidthRequest="56"
+                                    HorizontalOptions="Start">
+                                <Image Source="icon_animation.svg"
+                                       HeightRequest="28"
+                                       WidthRequest="28"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center" />
+                            </Border>
+
+                            <VerticalStackLayout Grid.Row="1"
+                                                 Spacing="8"
+                                                 VerticalOptions="End">
+                                <Label Text="Animation Frames"
+                                       FontSize="20"
+                                       FontAttributes="Bold"
+                                       TextColor="#24160D" />
+                                <Label Text="Build a frame sequence and compare motion with onion-skin overlays."
+                                       TextColor="#6D5846"
+                                       FontSize="14" />
+                            </VerticalStackLayout>
+
+                            <Label Grid.Row="2"
+                                   Text="Open mode"
+                                   TextColor="#8B6A43"
+                                   FontAttributes="Bold"
+                                   FontSize="13" />
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Row="1"
+                            Grid.Column="1"
+                            BackgroundColor="#FFF9F2"
+                            Stroke="#D8C4AA"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 28"
+                            MinimumHeightRequest="178"
+                            Padding="18">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding OpenSettingsCommand}" />
+                        </Border.GestureRecognizers>
+                        <Grid RowDefinitions="Auto,*,Auto">
+                            <Border BackgroundColor="#D9D8EC"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 18"
+                                    HeightRequest="56"
+                                    WidthRequest="56"
+                                    HorizontalOptions="Start">
+                                <Image Source="icon_settings.svg"
+                                       HeightRequest="28"
+                                       WidthRequest="28"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center" />
+                            </Border>
+
+                            <VerticalStackLayout Grid.Row="1"
+                                                 Spacing="8"
+                                                 VerticalOptions="End">
+                                <Label Text="Settings"
+                                       FontSize="20"
+                                       FontAttributes="Bold"
+                                       TextColor="#24160D" />
+                                <Label Text="Adjust default brightness, colour temperature, and tracing preferences."
+                                       TextColor="#6D5846"
+                                       FontSize="14" />
+                            </VerticalStackLayout>
+
+                            <Label Grid.Row="2"
+                                   Text="Open mode"
+                                   TextColor="#8B6A43"
+                                   FontAttributes="Bold"
+                                   FontSize="13" />
+                        </Grid>
+                    </Border>
+                </Grid>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
 
 </ContentPage>
