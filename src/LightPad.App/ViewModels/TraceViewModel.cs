@@ -14,6 +14,8 @@ public sealed class TraceViewModel : BaseViewModel
 {
     private const double MinZoom = 0.5;
     private const double MaxZoom = 4.0;
+    private const double MinGridSpacing = 16.0;
+    private const double MaxGridSpacing = 160.0;
     private readonly IImagePickerService _imagePickerService;
     private readonly IScreenWakeService _screenWakeService;
     private readonly ISettingsService _settingsService;
@@ -27,6 +29,8 @@ public sealed class TraceViewModel : BaseViewModel
     private string _statusMessage;
     private bool _isBusy;
     private bool _isControlsExpanded = true;
+    private bool _isGridVisible;
+    private double _gridSpacing;
     private double _surfaceBrightness;
     private double _surfaceColorTemperature;
     private LightColorPreset _surfacePreset;
@@ -52,12 +56,15 @@ public sealed class TraceViewModel : BaseViewModel
             0.1,
             1.0);
         _isImageLocked = _activeImage.IsLocked;
+        _isGridVisible = sessionState.GridVisible;
+        _gridSpacing = LightSurfaceStyleCalculator.Clamp(sessionState.GridSpacing, MinGridSpacing, MaxGridSpacing);
         _surfaceBrightness = LightSurfaceStyleCalculator.Clamp(settingsService.Brightness, 0.05, 1.0);
         _surfaceColorTemperature = LightSurfaceStyleCalculator.Clamp(settingsService.ColorTemperature, 2700.0, 9000.0);
         _surfacePreset = settingsService.SelectedPreset;
         _surfaceCustomColorHex = LightSurfaceStyleCalculator.NormalizeHexOrDefault(settingsService.CustomColorHex, "#FFFFFF");
         _statusMessage = CreateStatusMessage();
         _activeImage.Opacity = _imageOpacity;
+        SessionState.GridSpacing = _gridSpacing;
 
         BackCommand = new Command(async () => await Shell.Current.GoToAsync(".."));
         ImportImageCommand = new Command(async () => await ImportImageAsync(), () => !IsBusy);
@@ -66,6 +73,7 @@ public sealed class TraceViewModel : BaseViewModel
         ClearImageCommand = new Command(ClearImage, () => HasImage && !IsBusy);
         ZoomOutCommand = new Command(() => NudgeZoom(-0.15), () => HasImage && !IsBusy);
         ZoomInCommand = new Command(() => NudgeZoom(0.15), () => HasImage && !IsBusy);
+        ToggleGridCommand = new Command(ToggleGrid);
         ToggleControlsCommand = new Command(ToggleControls);
     }
 
@@ -84,6 +92,8 @@ public sealed class TraceViewModel : BaseViewModel
     public Command ZoomOutCommand { get; }
 
     public Command ZoomInCommand { get; }
+
+    public Command ToggleGridCommand { get; }
 
     public Command ToggleControlsCommand { get; }
 
@@ -208,6 +218,38 @@ public sealed class TraceViewModel : BaseViewModel
 
     public bool CanManipulateImage => HasImage && !IsImageLocked;
 
+    public bool IsGridVisible
+    {
+        get => _isGridVisible;
+        set
+        {
+            if (!SetProperty(ref _isGridVisible, value))
+            {
+                return;
+            }
+
+            SessionState.GridVisible = value;
+            OnPropertyChanged(nameof(GridButtonText));
+            UpdateStatusMessage();
+        }
+    }
+
+    public double GridSpacing
+    {
+        get => _gridSpacing;
+        set
+        {
+            var clampedValue = LightSurfaceStyleCalculator.Clamp(value, MinGridSpacing, MaxGridSpacing);
+            if (!SetProperty(ref _gridSpacing, clampedValue))
+            {
+                return;
+            }
+
+            SessionState.GridSpacing = clampedValue;
+            UpdateStatusMessage();
+        }
+    }
+
     public bool IsControlsExpanded
     {
         get => _isControlsExpanded;
@@ -226,6 +268,8 @@ public sealed class TraceViewModel : BaseViewModel
     public bool IsFloatingShowToolsVisible => !IsControlsExpanded;
 
     public string LockButtonText => IsImageLocked ? "Unlock Image" : "Lock Image";
+
+    public string GridButtonText => IsGridVisible ? "Hide Grid" : "Show Grid";
 
     public string ControlsToggleText => IsControlsExpanded ? "Hide Tools" : "Show Tools";
 
@@ -379,6 +423,11 @@ public sealed class TraceViewModel : BaseViewModel
         IsControlsExpanded = !IsControlsExpanded;
     }
 
+    private void ToggleGrid()
+    {
+        IsGridVisible = !IsGridVisible;
+    }
+
     private void UpdateStatusMessage(string? overrideMessage = null)
     {
         _statusMessage = overrideMessage ?? CreateStatusMessage();
@@ -392,6 +441,7 @@ public sealed class TraceViewModel : BaseViewModel
             return "No trace image loaded yet. Import a single image to start panning and zooming.";
         }
 
-        return $"{ImageName}: zoom {Zoom:0.00}x, opacity {ImageOpacity:P0}, offset ({OffsetX:0}, {OffsetY:0}).";
+        var gridText = IsGridVisible ? $"grid {GridSpacing:0}px" : "grid off";
+        return $"{ImageName}: zoom {Zoom:0.00}x, opacity {ImageOpacity:P0}, {gridText}, offset ({OffsetX:0}, {OffsetY:0}).";
     }
 }
