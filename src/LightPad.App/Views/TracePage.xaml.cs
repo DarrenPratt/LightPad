@@ -66,6 +66,7 @@ public partial class TracePage : ContentPage
             or nameof(TraceViewModel.OffsetX)
             or nameof(TraceViewModel.OffsetY)
             or nameof(TraceViewModel.Zoom)
+            or nameof(TraceViewModel.RotationAngle)
             or nameof(TraceViewModel.ImageOpacity)
             or nameof(TraceViewModel.IsImageLocked))
         {
@@ -114,8 +115,15 @@ public partial class TracePage : ContentPage
         };
         var sampling = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None);
         using var image = SKImage.FromBitmap(_traceBitmap);
+        var centerX = targetRect.MidX;
+        var centerY = targetRect.MidY;
 
+        canvas.Save();
+        canvas.Translate(centerX, centerY);
+        canvas.RotateDegrees((float)_viewModel.RotationAngle);
+        canvas.Translate(-centerX, -centerY);
         canvas.DrawImage(image, targetRect, sampling, bitmapPaint);
+        canvas.Restore();
     }
 
     private void OnImagePanUpdated(object? sender, PanUpdatedEventArgs e)
