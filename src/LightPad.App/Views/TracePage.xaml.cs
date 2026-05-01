@@ -1,5 +1,9 @@
 using System.ComponentModel;
+using System.Threading;
+using System.Threading.Tasks;
 using LightPad.App.Infrastructure;
+using LightPad.App.Services;
+using LightPad.App.Utilities;
 using LightPad.App.ViewModels;
 using SkiaSharp;
 using SkiaSharp.Views.Maui;
@@ -10,35 +14,44 @@ namespace LightPad.App.Views;
 public partial class TracePage : ContentPage
 {
     private readonly TraceViewModel _viewModel;
+    private readonly ISettingsService _settingsService;
     private double _panStartX;
     private double _panStartY;
     private double _pinchStartScale;
     private SKBitmap? _traceBitmap;
     private string? _loadedBitmapPath;
+    private CancellationTokenSource? _gestureHintDismissalCts;
+    private bool _isGestureHintVisible;
 
     public TracePage()
-        : this(ServiceProviderHelper.GetRequiredService<TraceViewModel>())
+        : this(
+            ServiceProviderHelper.GetRequiredService<TraceViewModel>(),
+            ServiceProviderHelper.GetRequiredService<ISettingsService>())
     {
     }
 
-    public TracePage(TraceViewModel viewModel)
+    public TracePage(TraceViewModel viewModel, ISettingsService settingsService)
     {
         InitializeComponent();
         _viewModel = viewModel;
+        _settingsService = settingsService;
         _viewModel.PropertyChanged += OnViewModelPropertyChanged;
         BindingContext = viewModel;
+        ConfigureGestureHint();
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
         await _viewModel.OnAppearingAsync();
+        ShowGestureHintIfNeeded();
         LoadBitmapIfNeeded();
         TraceCanvas.InvalidateSurface();
     }
 
     protected override async void OnDisappearing()
     {
+        CancelGestureHintDismissal();
         await _viewModel.OnDisappearingAsync();
         base.OnDisappearing();
     }
@@ -47,6 +60,7 @@ public partial class TracePage : ContentPage
     {
         if (args.NewHandler is null)
         {
+            CancelGestureHintDismissal();
             _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
             DisposeBitmap();
         }
@@ -128,6 +142,8 @@ public partial class TracePage : ContentPage
 
     private void OnImagePanUpdated(object? sender, PanUpdatedEventArgs e)
     {
+        DismissGestureHintForInteraction();
+
         if (!_viewModel.CanManipulateImage)
         {
             return;
@@ -147,6 +163,8 @@ public partial class TracePage : ContentPage
 
     private void OnImagePinchUpdated(object? sender, PinchGestureUpdatedEventArgs e)
     {
+        DismissGestureHintForInteraction();
+
         if (!_viewModel.CanManipulateImage)
         {
             return;
@@ -165,10 +183,17 @@ public partial class TracePage : ContentPage
 
     private void OnTraceSurfaceDoubleTapped(object? sender, TappedEventArgs e)
     {
+        DismissGestureHintForInteraction();
+
         if (_viewModel.ResetViewCommand.CanExecute(null))
         {
             _viewModel.ResetViewCommand.Execute(null);
         }
+    }
+
+    private void OnGestureHintDismissed(object? sender, EventArgs e)
+    {
+        DismissGestureHint();
     }
 
     private void LoadBitmapIfNeeded()
@@ -204,5 +229,83 @@ public partial class TracePage : ContentPage
         _traceBitmap?.Dispose();
         _traceBitmap = null;
         _loadedBitmapPath = null;
+    }
+
+    private void ConfigureGestureHint()
+    {
+        var hint = GestureHintContentFactory.CreateTraceHint();
+        GestureHintTitleLabel.Text = hint.Title;
+        GestureHintSubtitleLabel.Text = hint.Subtitle;
+
+        foreach (var tip in hint.Tips)
+        {
+            GestureHintTipsLayout.Children.Add(new Label
+            {
+                Text = $"• {tip}",
+                TextColor = Colors.White,
+                LineBreakMode = LineBreakMode.WordWrap
+            });
+        }
+    }
+
+    private void ShowGestureHintIfNeeded()
+    {
+        if (_settingsService.HasSeenTraceGestureHint || _isGestureHintVisible)
+        {
+            return;
+        }
+
+        _settingsService.HasSeenTraceGestureHint = true;
+        _isGestureHintVisible = true;
+        GestureHintOverlay.IsVisible = true;
+        StartGestureHintDismissalTimer();
+    }
+
+    private void DismissGestureHintForInteraction()
+    {
+        if (!_isGestureHintVisible)
+        {
+            return;
+        }
+
+        DismissGestureHint();
+    }
+
+    private void DismissGestureHint()
+    {
+        if (!_isGestureHintVisible)
+        {
+            return;
+        }
+
+        CancelGestureHintDismissal();
+        _isGestureHintVisible = false;
+        GestureHintOverlay.IsVisible = false;
+    }
+
+    private void StartGestureHintDismissalTimer()
+    {
+        CancelGestureHintDismissal();
+        _gestureHintDismissalCts = new CancellationTokenSource();
+        _ = DismissGestureHintAfterDelayAsync(_gestureHintDismissalCts.Token);
+    }
+
+    private async Task DismissGestureHintAfterDelayAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+            await MainThread.InvokeOnMainThreadAsync(DismissGestureHint);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    private void CancelGestureHintDismissal()
+    {
+        _gestureHintDismissalCts?.Cancel();
+        _gestureHintDismissalCts?.Dispose();
+        _gestureHintDismissalCts = null;
     }
 }

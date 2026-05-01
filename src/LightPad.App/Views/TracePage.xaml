@@ -288,6 +288,41 @@
                         </VerticalStackLayout>
                     </ScrollView>
                 </Border>
+
+                <Grid x:Name="GestureHintOverlay"
+                      BackgroundColor="#B8141414"
+                      IsVisible="False"
+                      InputTransparent="False">
+                    <Border BackgroundColor="#EE1B1B1B"
+                            Stroke="#40F5E7A1"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 28"
+                            Padding="22"
+                            Margin="24"
+                            MaximumWidthRequest="420"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center">
+                        <VerticalStackLayout Spacing="14">
+                            <Label x:Name="GestureHintTitleLabel"
+                                   TextColor="#F5E7A1"
+                                   FontAttributes="Bold"
+                                   FontSize="20" />
+                            <Label x:Name="GestureHintSubtitleLabel"
+                                   TextColor="#E8FFFFFF"
+                                   LineBreakMode="WordWrap" />
+                            <VerticalStackLayout x:Name="GestureHintTipsLayout"
+                                                 Spacing="10" />
+                            <Button Text="Dismiss"
+                                    Clicked="OnGestureHintDismissed"
+                                    BackgroundColor="#F5E7A1"
+                                    TextColor="Black"
+                                    CornerRadius="20"
+                                    Padding="16,10"
+                                    HorizontalOptions="End"
+                                    MinimumHeightRequest="44" />
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
             </Grid>
         </Border>
     </Grid>

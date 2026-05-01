@@ -11,6 +11,8 @@ public sealed class SettingsService : ISettingsService
     private const string SelectedPresetKey = "lightpad.selectedPreset";
     private const string CustomColorHexKey = "lightpad.customColorHex";
     private const string DefaultTraceOpacityKey = "lightpad.defaultTraceOpacity";
+    private const string HasSeenTraceGestureHintKey = "lightpad.hasSeenTraceGestureHint";
+    private const string HasSeenAnimationGestureHintKey = "lightpad.hasSeenAnimationGestureHint";
 
     public double Brightness
     {
@@ -46,5 +48,17 @@ public sealed class SettingsService : ISettingsService
     {
         get => Preferences.Default.Get(DefaultTraceOpacityKey, 0.65);
         set => Preferences.Default.Set(DefaultTraceOpacityKey, value);
+    }
+
+    public bool HasSeenTraceGestureHint
+    {
+        get => Preferences.Default.Get(HasSeenTraceGestureHintKey, false);
+        set => Preferences.Default.Set(HasSeenTraceGestureHintKey, value);
+    }
+
+    public bool HasSeenAnimationGestureHint
+    {
+        get => Preferences.Default.Get(HasSeenAnimationGestureHintKey, false);
+        set => Preferences.Default.Set(HasSeenAnimationGestureHintKey, value);
     }
 }
