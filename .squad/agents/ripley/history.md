@@ -26,3 +26,19 @@
 - Phased delivery model confirmed: architecture/contracts → plain lightbox → trace mode → safe controls/settings → quality/CI hardening → release readiness.
 - Animation and onion skin deferred to post-v1 backlog; iPad readiness preserved through platform abstraction and iOS compile readiness in each phase.
 - Decision inbox cleared (2 items processed).
+
+### 2026-05-01T18:35:50Z (Ripley Code Review + Backlog Grooming)
+- Reviewed app architecture, design doc, and implementation scaffolding across ViewModels, Services, and Models.
+- Scaffold is solid: MVVM contracts established (BaseViewModel, IImagePickerService, IScreenWakeService, ISettingsService); SkiaSharp integrated for image rendering.
+- State management via TraceSessionState, AnimationSessionState, and per-view settings; ServiceProviderHelper pattern for DI access.
+- Identified 5 feature gaps vs. design doc and platform requirements: image rotation, grid overlay, gesture locking for stylus, session persistence, platform-specific brightness.
+- Created GitHub issues #1, #3, #5, #7, #9 to address these gaps with clear acceptance criteria.
+- Architecture decision: Session persistence should serialize to app-scoped storage (not cloud) to support airplane mode and offline workflows on tablets.
+- Platform consideration: Stylus/pen input handling must distinguish input types and respect lock state; affects UX quality on Surface + Android tablets.
+
+### 2026-05-01T17:35:50Z (Scribe Decision Merge)
+- Scribe synchronized **Session Persistence Strategy** decision into active decisions ledger.
+- Decision confirmed: use app-scoped local file storage (JSON serialization) for TraceSessionState and AnimationSessionState.
+- Auto-save on state changes; cap history to last 5 sessions. Offline-capable, MVP-aligned, upgradeable to cloud sync later.
+- Cross-team decisions now merged: Platform Risk Assessment (Bishop), UX Touch Workflow (Hicks) also entered ledger.
+- Decision inbox cleared (3 items processed).

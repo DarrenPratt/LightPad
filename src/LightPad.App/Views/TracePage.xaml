@@ -246,6 +246,45 @@
                                     MinimumTrackColor="#F5E7A1"
                                     MaximumTrackColor="#4A4A4A"
                                     HeightRequest="40" />
+
+                            <Grid ColumnDefinitions="*,Auto,Auto,Auto"
+                                  ColumnSpacing="10">
+                                <Label Text="Rotation"
+                                       TextColor="White"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center" />
+                                <Button Grid.Column="1"
+                                        Text="Rotate -"
+                                        Command="{Binding RotateLeftCommand}"
+                                        BackgroundColor="#333333"
+                                        TextColor="White"
+                                        CornerRadius="20"
+                                        MinimumHeightRequest="44"
+                                        MinimumWidthRequest="90"
+                                        IsEnabled="{Binding CanManipulateImage}" />
+                                <Button Grid.Column="2"
+                                        Text="Rotate +"
+                                        Command="{Binding RotateRightCommand}"
+                                        BackgroundColor="#333333"
+                                        TextColor="White"
+                                        CornerRadius="20"
+                                        MinimumHeightRequest="44"
+                                        MinimumWidthRequest="90"
+                                        IsEnabled="{Binding CanManipulateImage}" />
+                                <Label Grid.Column="3"
+                                       Text="{Binding RotationAngle, StringFormat='{0:0}°'}"
+                                       TextColor="White"
+                                       VerticalOptions="Center" />
+                            </Grid>
+
+                            <Slider Minimum="0"
+                                    Maximum="360"
+                                    Value="{Binding RotationAngle}"
+                                    ThumbColor="#F5E7A1"
+                                    MinimumTrackColor="#F5E7A1"
+                                    MaximumTrackColor="#4A4A4A"
+                                    HeightRequest="40"
+                                    IsEnabled="{Binding CanManipulateImage}" />
                         </VerticalStackLayout>
                     </ScrollView>
                 </Border>
