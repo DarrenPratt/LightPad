@@ -1,13 +1,333 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:skia="clr-namespace:SkiaSharp.Views.Maui.Controls;assembly=SkiaSharp.Views.Maui.Controls"
              xmlns:viewModels="clr-namespace:LightPad.App.ViewModels"
              x:Class="LightPad.App.Views.AnimationPage"
+             x:Name="PageRoot"
              x:DataType="viewModels:AnimationViewModel"
-             Title="Animation Frames">
-    <Grid>
-        <Label Text="{Binding StatusText}"
-               HorizontalOptions="Center"
-               VerticalOptions="Center" />
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#111111">
+    <Grid RowDefinitions="Auto,*"
+          Padding="8"
+          RowSpacing="8">
+        <Grid ColumnDefinitions="Auto,*,Auto"
+              ColumnSpacing="10"
+              IsVisible="{Binding IsControlsExpanded}">
+            <Button Text="Back"
+                    Command="{Binding BackCommand}"
+                    BackgroundColor="#D91A1A1A"
+                    TextColor="White"
+                    CornerRadius="20"
+                    Padding="16,10"
+                    MinimumHeightRequest="48" />
+
+            <Border Grid.Column="1"
+                    BackgroundColor="#D91A1A1A"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 20">
+                <VerticalStackLayout Padding="16,10"
+                                     Spacing="4">
+                    <Label Text="Animation Frames"
+                           TextColor="#F5E7A1"
+                           FontAttributes="Bold"
+                           FontSize="18" />
+                    <Label Text="{Binding StatusText}"
+                           TextColor="White"
+                           LineBreakMode="TailTruncation"
+                           MaxLines="2" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Button Grid.Column="2"
+                    Text="Import"
+                    Command="{Binding ImportFrameCommand}"
+                    BackgroundColor="#F5E7A1"
+                    TextColor="Black"
+                    CornerRadius="20"
+                    Padding="16,10"
+                    MinimumHeightRequest="48"
+                    MinimumWidthRequest="104" />
+        </Grid>
+
+        <Border Grid.Row="1"
+                BackgroundColor="#1A1A1A"
+                Stroke="#2E2E2E"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 32">
+            <Grid x:Name="AnimationSurface">
+                <BoxView Color="{Binding TraceBackdropColor}" />
+                <BoxView Color="Black"
+                         Opacity="{Binding TraceBackdropOverlayOpacity}" />
+
+                <Grid.GestureRecognizers>
+                    <PanGestureRecognizer PanUpdated="OnFramePanUpdated" />
+                    <PinchGestureRecognizer PinchUpdated="OnFramePinchUpdated" />
+                    <TapGestureRecognizer NumberOfTapsRequired="2"
+                                          Tapped="OnAnimationSurfaceDoubleTapped" />
+                </Grid.GestureRecognizers>
+
+                <Border Margin="10"
+                        BackgroundColor="#F3F1E8"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 24" />
+
+                <skia:SKCanvasView x:Name="AnimationCanvas"
+                                   PaintSurface="OnAnimationCanvasPaintSurface"
+                                   EnableTouchEvents="False" />
+
+                <Border BackgroundColor="#BF111111"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 24"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                        Padding="24,18"
+                        IsVisible="{Binding IsEmptyStateVisible}">
+                    <VerticalStackLayout Spacing="10"
+                                         HorizontalOptions="Center">
+                        <Label Text="No frames loaded yet"
+                               TextColor="White"
+                               FontAttributes="Bold"
+                               HorizontalTextAlignment="Center"
+                               FontSize="18" />
+                        <Label Text="Import frames one by one. Move through the sequence with previous and next, and use onion skin to compare the prior frame."
+                               TextColor="#DDFFFFFF"
+                               HorizontalTextAlignment="Center"
+                               MaximumWidthRequest="380" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border Margin="12"
+                        BackgroundColor="#AA111111"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 18"
+                        Padding="14,10"
+                        HorizontalOptions="End"
+                        VerticalOptions="Start"
+                        IsVisible="{Binding IsFrameLocked}">
+                    <Label Text="Movement Locked"
+                           TextColor="White"
+                           FontAttributes="Bold" />
+                </Border>
+
+                <Border Margin="12"
+                        BackgroundColor="#AA111111"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 18"
+                        Padding="14,10"
+                        HorizontalOptions="Start"
+                        VerticalOptions="Start">
+                    <Label Text="{Binding TraceBackdropStatusText}"
+                           TextColor="White"
+                           MaximumWidthRequest="280" />
+                </Border>
+
+                <Button Text="Show Tools"
+                        Command="{Binding ToggleControlsCommand}"
+                        BackgroundColor="#D9F5E7A1"
+                        TextColor="Black"
+                        CornerRadius="24"
+                        Padding="18,12"
+                        MinimumHeightRequest="50"
+                        MinimumWidthRequest="126"
+                        HorizontalOptions="End"
+                        VerticalOptions="End"
+                        Margin="16"
+                        IsVisible="{Binding IsFloatingShowToolsVisible}" />
+
+                <Border BackgroundColor="#E0101010"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 28"
+                        HorizontalOptions="Fill"
+                        VerticalOptions="End"
+                        Margin="10"
+                        IsVisible="{Binding IsControlsExpanded}">
+                    <ScrollView Orientation="Vertical"
+                                MaximumHeightRequest="340">
+                        <VerticalStackLayout Padding="18"
+                                             Spacing="18">
+                            <Grid ColumnDefinitions="*,Auto,Auto,Auto"
+                                  ColumnSpacing="10">
+                                <VerticalStackLayout Spacing="4">
+                                    <Label Text="{Binding CurrentFrameName}"
+                                           TextColor="#F5E7A1"
+                                           FontAttributes="Bold"
+                                           FontSize="16" />
+                                    <Label Text="{Binding FrameCounterText}"
+                                           TextColor="White" />
+                                </VerticalStackLayout>
+
+                                <Button Grid.Column="1"
+                                        Text="{Binding ControlsToggleText}"
+                                        Command="{Binding ToggleControlsCommand}"
+                                        BackgroundColor="#252525"
+                                        TextColor="White"
+                                        CornerRadius="22"
+                                        MinimumHeightRequest="48"
+                                        Padding="16,10" />
+
+                                <Button Grid.Column="2"
+                                        Text="{Binding FrameLockButtonText}"
+                                        Command="{Binding ToggleFrameLockCommand}"
+                                        BackgroundColor="#333333"
+                                        TextColor="White"
+                                        CornerRadius="22"
+                                        MinimumHeightRequest="48"
+                                        Padding="16,10" />
+
+                                <Button Grid.Column="3"
+                                        Text="Reset View"
+                                        Command="{Binding ResetViewCommand}"
+                                        BackgroundColor="#F5E7A1"
+                                        TextColor="Black"
+                                        CornerRadius="22"
+                                        MinimumHeightRequest="48"
+                                        Padding="16,10" />
+                            </Grid>
+
+                            <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto"
+                                  ColumnSpacing="10">
+                                <Button Text="Prev"
+                                        Command="{Binding PreviousFrameCommand}"
+                                        BackgroundColor="#333333"
+                                        TextColor="White"
+                                        CornerRadius="20"
+                                        MinimumHeightRequest="44" />
+                                <Button Grid.Column="1"
+                                        Text="Next"
+                                        Command="{Binding NextFrameCommand}"
+                                        BackgroundColor="#333333"
+                                        TextColor="White"
+                                        CornerRadius="20"
+                                        MinimumHeightRequest="44" />
+                                <Label Grid.Column="2"
+                                       Text="{Binding StatusText}"
+                                       TextColor="White"
+                                       VerticalOptions="Center"
+                                       LineBreakMode="TailTruncation"
+                                       MaxLines="1" />
+                                <Button Grid.Column="3"
+                                        Text="Remove"
+                                        Command="{Binding RemoveCurrentFrameCommand}"
+                                        BackgroundColor="#5A2424"
+                                        TextColor="White"
+                                        CornerRadius="20"
+                                        MinimumHeightRequest="44" />
+                                <Button Grid.Column="4"
+                                        Text="Clear All"
+                                        Command="{Binding ClearFramesCommand}"
+                                        BackgroundColor="#5A2424"
+                                        TextColor="White"
+                                        CornerRadius="20"
+                                        MinimumHeightRequest="44" />
+                                <Button Grid.Column="5"
+                                        Text="Import"
+                                        Command="{Binding ImportFrameCommand}"
+                                        BackgroundColor="#F5E7A1"
+                                        TextColor="Black"
+                                        CornerRadius="20"
+                                        MinimumHeightRequest="44" />
+                            </Grid>
+
+                            <CollectionView ItemsSource="{Binding Frames}"
+                                            SelectionMode="None"
+                                            HeightRequest="60">
+                                <CollectionView.ItemsLayout>
+                                    <LinearItemsLayout Orientation="Horizontal"
+                                                       ItemSpacing="10" />
+                                </CollectionView.ItemsLayout>
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="viewModels:AnimationFrameItemViewModel">
+                                        <Button Text="{Binding DisplayName}"
+                                                Command="{Binding Source={x:Reference PageRoot}, Path=BindingContext.SelectFrameCommand}"
+                                                CommandParameter="{Binding .}"
+                                                BackgroundColor="{Binding FrameChipBackground}"
+                                                TextColor="{Binding FrameChipTextColor}"
+                                                CornerRadius="18"
+                                                Padding="14,8"
+                                                MinimumHeightRequest="40" />
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Text="Current Frame Opacity"
+                                       TextColor="White"
+                                       FontAttributes="Bold" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding CurrentFrameOpacity, StringFormat='{0:P0}'}"
+                                       TextColor="White" />
+                            </Grid>
+
+                            <Slider Minimum="0.1"
+                                    Maximum="1"
+                                    Value="{Binding CurrentFrameOpacity}"
+                                    ThumbColor="#F5E7A1"
+                                    MinimumTrackColor="#F5E7A1"
+                                    MaximumTrackColor="#4A4A4A"
+                                    HeightRequest="40" />
+
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <CheckBox IsChecked="{Binding IsOnionSkinEnabled}"
+                                          Color="#F5E7A1"
+                                          VerticalOptions="Center" />
+                                <Label Grid.Column="1"
+                                       Text="Onion skin previous frame"
+                                       TextColor="White"
+                                       VerticalOptions="Center" />
+                                <Label Grid.Column="2"
+                                       Text="{Binding OnionSkinOpacity, StringFormat='{0:P0}'}"
+                                       TextColor="White"
+                                       VerticalOptions="Center" />
+                            </Grid>
+
+                            <Slider Minimum="0"
+                                    Maximum="1"
+                                    Value="{Binding OnionSkinOpacity}"
+                                    ThumbColor="#F5E7A1"
+                                    MinimumTrackColor="#F5E7A1"
+                                    MaximumTrackColor="#4A4A4A"
+                                    HeightRequest="40" />
+
+                            <Grid ColumnDefinitions="*,Auto,Auto,Auto"
+                                  ColumnSpacing="10">
+                                <Label Text="Zoom"
+                                       TextColor="White"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center" />
+                                <Button Grid.Column="1"
+                                        Text="-"
+                                        Command="{Binding ZoomOutCommand}"
+                                        BackgroundColor="#333333"
+                                        TextColor="White"
+                                        CornerRadius="20"
+                                        MinimumHeightRequest="44"
+                                        MinimumWidthRequest="52" />
+                                <Button Grid.Column="2"
+                                        Text="+"
+                                        Command="{Binding ZoomInCommand}"
+                                        BackgroundColor="#333333"
+                                        TextColor="White"
+                                        CornerRadius="20"
+                                        MinimumHeightRequest="44"
+                                        MinimumWidthRequest="52" />
+                                <Label Grid.Column="3"
+                                       Text="{Binding Zoom, StringFormat='{0:0.00}x'}"
+                                       TextColor="White"
+                                       VerticalOptions="Center" />
+                            </Grid>
+
+                            <Slider Minimum="0.5"
+                                    Maximum="4"
+                                    Value="{Binding Zoom}"
+                                    ThumbColor="#F5E7A1"
+                                    MinimumTrackColor="#F5E7A1"
+                                    MaximumTrackColor="#4A4A4A"
+                                    HeightRequest="40" />
+                        </VerticalStackLayout>
+                    </ScrollView>
+                </Border>
+            </Grid>
+        </Border>
     </Grid>
 </ContentPage>
