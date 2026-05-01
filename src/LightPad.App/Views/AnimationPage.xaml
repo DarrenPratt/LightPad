@@ -143,6 +143,7 @@
                         Margin="10"
                         IsVisible="{Binding IsControlsExpanded}">
                     <ScrollView Orientation="Vertical"
+                                VerticalScrollBarVisibility="Always"
                                 MaximumHeightRequest="340">
                         <VerticalStackLayout Padding="18"
                                              Spacing="18">

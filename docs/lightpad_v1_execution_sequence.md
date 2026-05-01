@@ -270,3 +270,131 @@ LightPad v1 is ready when:
 - Windows is validated first and Android is at functional parity
 
 At that point, `AnimationPage` and advanced overlays can move into v2 planning.
+
+## Animation v2 Plan
+
+The first pass of `AnimationPage` now exists, but several items are still intentionally out of scope. Use this plan to expand the animation workflow without destabilizing the shipped v1 lightbox and trace flows.
+
+### Phase A: Multi-select and bulk frame import
+
+Goal: reduce setup friction for animation sequences.
+
+Work:
+
+- extend `IImagePickerService` to support selecting multiple image files where the platform allows it
+- add a fallback repeated-add flow on platforms that do not support multi-select cleanly
+- preserve import order and normalize imported files into app-local cache paths as needed
+- update animation status and frame-strip UI to handle larger sequences
+
+Likely files:
+
+- `src/LightPad.App/Services/IImagePickerService.cs`
+- `src/LightPad.App/Services/ImagePickerService.cs`
+- `src/LightPad.App/ViewModels/AnimationViewModel.cs`
+- `src/LightPad.App/Views/AnimationPage.xaml`
+
+Exit criteria:
+
+- user can add multiple frames in one action on supported platforms
+- sequence order is predictable after import
+- imported frames still load reliably on Windows and Android
+
+### Phase B: Frame ordering and timeline editing
+
+Goal: make sequence management practical beyond simple previous/next stepping.
+
+Work:
+
+- support drag reorder or explicit move-left/move-right actions in the frame strip
+- add insert-before / insert-after behavior for new frames if needed
+- keep current-frame selection stable while reordering
+- update sequence status text and navigation logic after timeline edits
+
+Likely files:
+
+- `src/LightPad.App/ViewModels/AnimationViewModel.cs`
+- `src/LightPad.App/Views/AnimationPage.xaml`
+- `src/LightPad.App/Models/AnimationSessionState.cs`
+
+Exit criteria:
+
+- user can reorder frames without rebuilding the sequence manually
+- current selection and onion-skin behavior stay correct after reorder operations
+
+### Phase C: Per-frame transforms and overrides
+
+Goal: allow each frame to be aligned independently when shared pan/zoom is not enough.
+
+Work:
+
+- add per-frame offset, zoom, rotation, and opacity fields to animation frame state
+- decide which controls remain sequence-global versus frame-local
+- update canvas rendering to use current-frame transforms and previous-frame transforms independently
+- add a reset-current-frame action separate from reset-whole-view if needed
+
+Likely files:
+
+- `src/LightPad.App/Models/AnimationFrameState.cs`
+- `src/LightPad.App/Models/AnimationSessionState.cs`
+- `src/LightPad.App/ViewModels/AnimationViewModel.cs`
+- `src/LightPad.App/Views/AnimationPage.xaml.cs`
+
+Exit criteria:
+
+- user can align frames individually
+- onion skin still compares the intended prior frame after local adjustments
+
+### Phase D: Session persistence
+
+Goal: let animation work survive navigation, app restarts, and longer production use.
+
+Work:
+
+- define a persisted animation session format
+- store frame ordering plus transform and opacity settings
+- decide whether image paths should reference cache copies, original files, or imported app data
+- load the last active animation session on return to the page, or provide explicit save/load controls
+
+Likely files:
+
+- `src/LightPad.App/Services/ISettingsService.cs`
+- `src/LightPad.App/Services/SettingsService.cs`
+- `src/LightPad.App/Models/AnimationSessionState.cs`
+- `src/LightPad.App/ViewModels/AnimationViewModel.cs`
+
+Exit criteria:
+
+- user can close and reopen the app without losing the active sequence
+- missing-file handling is explicit and does not silently corrupt session state
+
+### Phase E: Advanced onion skin and preview tools
+
+Goal: improve frame comparison once the editing model is stable.
+
+Work:
+
+- optionally show next-frame onion skin in addition to previous-frame overlay
+- support separate colours or tinting for previous and next overlays if needed
+- add quick preview playback for low-friction sequence checking
+- validate performance and memory pressure with larger frame counts
+
+Likely files:
+
+- `src/LightPad.App/ViewModels/AnimationViewModel.cs`
+- `src/LightPad.App/Views/AnimationPage.xaml`
+- `src/LightPad.App/Views/AnimationPage.xaml.cs`
+
+Exit criteria:
+
+- previous/next onion skin controls are understandable in the UI
+- preview tools do not make frame editing sluggish on target devices
+
+## Animation Backlog Order
+
+Recommended order for the deferred animation work:
+
+1. Multi-select and bulk frame import
+2. Frame ordering and timeline editing
+3. Session persistence
+4. Per-frame transforms and overrides
+5. Advanced onion skin and preview tools
