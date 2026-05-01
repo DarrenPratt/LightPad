@@ -11,7 +11,8 @@
           Padding="8"
           RowSpacing="8">
         <Grid ColumnDefinitions="Auto,*,Auto"
-              ColumnSpacing="10">
+              ColumnSpacing="10"
+              IsVisible="{Binding IsControlsExpanded}">
             <Button Text="Back"
                     Command="{Binding BackCommand}"
                     BackgroundColor="#D91A1A1A"
