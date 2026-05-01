@@ -10,7 +10,7 @@
     <Grid RowDefinitions="Auto,*"
           Padding="8"
           RowSpacing="8">
-        <Grid ColumnDefinitions="Auto,*,Auto"
+        <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto"
               ColumnSpacing="10"
               IsVisible="{Binding IsControlsExpanded}">
             <Button Text="Back"
@@ -21,7 +21,27 @@
                     Padding="16,10"
                     MinimumHeightRequest="48" />
 
-            <Border Grid.Column="1"
+            <Button Grid.Column="1"
+                    Text="Undo"
+                    Command="{Binding UndoCommand}"
+                    BackgroundColor="#252525"
+                    TextColor="White"
+                    CornerRadius="20"
+                    Padding="16,10"
+                    MinimumHeightRequest="48"
+                    MinimumWidthRequest="86" />
+
+            <Button Grid.Column="2"
+                    Text="Redo"
+                    Command="{Binding RedoCommand}"
+                    BackgroundColor="#252525"
+                    TextColor="White"
+                    CornerRadius="20"
+                    Padding="16,10"
+                    MinimumHeightRequest="48"
+                    MinimumWidthRequest="86" />
+
+            <Border Grid.Column="3"
                     BackgroundColor="#D91A1A1A"
                     StrokeThickness="0"
                     StrokeShape="RoundRectangle 20">
@@ -38,7 +58,7 @@
                 </VerticalStackLayout>
             </Border>
 
-            <Button Grid.Column="2"
+            <Button Grid.Column="4"
                     Text="Import"
                     Command="{Binding ImportImageCommand}"
                     BackgroundColor="#F5E7A1"
@@ -206,6 +226,8 @@
                             <Slider Minimum="0.1"
                                     Maximum="1"
                                     Value="{Binding ImageOpacity}"
+                                    DragStarted="OnManipulationSliderDragStarted"
+                                    DragCompleted="OnManipulationSliderDragCompleted"
                                     ThumbColor="#F5E7A1"
                                     MinimumTrackColor="#F5E7A1"
                                     MaximumTrackColor="#4A4A4A"
@@ -242,6 +264,8 @@
                             <Slider Minimum="0.5"
                                     Maximum="4"
                                     Value="{Binding Zoom}"
+                                    DragStarted="OnManipulationSliderDragStarted"
+                                    DragCompleted="OnManipulationSliderDragCompleted"
                                     ThumbColor="#F5E7A1"
                                     MinimumTrackColor="#F5E7A1"
                                     MaximumTrackColor="#4A4A4A"
@@ -280,6 +304,8 @@
                             <Slider Minimum="0"
                                     Maximum="360"
                                     Value="{Binding RotationAngle}"
+                                    DragStarted="OnManipulationSliderDragStarted"
+                                    DragCompleted="OnManipulationSliderDragCompleted"
                                     ThumbColor="#F5E7A1"
                                     MinimumTrackColor="#F5E7A1"
                                     MaximumTrackColor="#4A4A4A"

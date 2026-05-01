@@ -8,6 +8,13 @@ using LightPad.App.ViewModels;
 using SkiaSharp;
 using SkiaSharp.Views.Maui;
 using SkiaSharp.Views.Maui.Controls;
+#if WINDOWS
+using Microsoft.UI.Input;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Input;
+using Windows.System;
+using Windows.UI.Core;
+#endif
 
 namespace LightPad.App.Views;
 
@@ -22,6 +29,9 @@ public partial class TracePage : ContentPage
     private string? _loadedBitmapPath;
     private CancellationTokenSource? _gestureHintDismissalCts;
     private bool _isGestureHintVisible;
+#if WINDOWS
+    private FrameworkElement? _windowsKeyboardElement;
+#endif
 
     public TracePage()
         : this(
@@ -44,6 +54,7 @@ public partial class TracePage : ContentPage
     {
         base.OnAppearing();
         await _viewModel.OnAppearingAsync();
+        RegisterWindowsKeyboardShortcuts();
         ShowGestureHintIfNeeded();
         LoadBitmapIfNeeded();
         TraceCanvas.InvalidateSurface();
@@ -61,6 +72,7 @@ public partial class TracePage : ContentPage
         if (args.NewHandler is null)
         {
             CancelGestureHintDismissal();
+            UnregisterWindowsKeyboardShortcuts();
             _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
             DisposeBitmap();
         }
@@ -156,11 +168,16 @@ public partial class TracePage : ContentPage
         switch (e.StatusType)
         {
             case GestureStatus.Started:
+                _viewModel.BeginInteractionHistoryCapture();
                 _panStartX = _viewModel.OffsetX;
                 _panStartY = _viewModel.OffsetY;
                 break;
             case GestureStatus.Running:
                 _viewModel.ApplyPan(_panStartX, _panStartY, e.TotalX, e.TotalY);
+                break;
+            case GestureStatus.Completed:
+            case GestureStatus.Canceled:
+                _viewModel.CommitInteractionHistoryCapture();
                 break;
         }
     }
@@ -177,15 +194,20 @@ public partial class TracePage : ContentPage
         switch (e.Status)
         {
             case GestureStatus.Started:
+                _viewModel.BeginInteractionHistoryCapture();
                 _pinchStartScale = _viewModel.Zoom;
                 break;
             case GestureStatus.Running:
                 _viewModel.ApplyZoom(_pinchStartScale * e.Scale);
                 break;
+            case GestureStatus.Completed:
+            case GestureStatus.Canceled:
+                _viewModel.CommitInteractionHistoryCapture();
+                break;
         }
     }
 
-    private void OnTraceSurfaceDoubleTapped(object? sender, TappedEventArgs e)
+    private void OnTraceSurfaceDoubleTapped(object? sender, Microsoft.Maui.Controls.TappedEventArgs e)
     {
         DismissGestureHintForInteraction();
 
@@ -198,6 +220,17 @@ public partial class TracePage : ContentPage
     private void OnGestureHintDismissed(object? sender, EventArgs e)
     {
         DismissGestureHint();
+    }
+
+    private void OnManipulationSliderDragStarted(object? sender, EventArgs e)
+    {
+        DismissGestureHintForInteraction();
+        _viewModel.BeginInteractionHistoryCapture();
+    }
+
+    private void OnManipulationSliderDragCompleted(object? sender, EventArgs e)
+    {
+        _viewModel.CommitInteractionHistoryCapture();
     }
 
     private void LoadBitmapIfNeeded()
@@ -367,4 +400,67 @@ public partial class TracePage : ContentPage
         _gestureHintDismissalCts?.Dispose();
         _gestureHintDismissalCts = null;
     }
+
+    private void RegisterWindowsKeyboardShortcuts()
+    {
+#if WINDOWS
+        if (_windowsKeyboardElement is not null)
+        {
+            return;
+        }
+
+        if (Handler?.PlatformView is FrameworkElement element)
+        {
+            _windowsKeyboardElement = element;
+            element.KeyDown += OnWindowsKeyDown;
+        }
+#endif
+    }
+
+    private void UnregisterWindowsKeyboardShortcuts()
+    {
+#if WINDOWS
+        if (_windowsKeyboardElement is null)
+        {
+            return;
+        }
+
+        _windowsKeyboardElement.KeyDown -= OnWindowsKeyDown;
+        _windowsKeyboardElement = null;
+#endif
+    }
+
+#if WINDOWS
+    private void OnWindowsKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        var controlPressed = InputKeyboardSource
+            .GetKeyStateForCurrentThread(VirtualKey.Control)
+            .HasFlag(CoreVirtualKeyStates.Down);
+        if (!controlPressed || e.Key is not VirtualKey.Z)
+        {
+            return;
+        }
+
+        var shiftPressed = InputKeyboardSource
+            .GetKeyStateForCurrentThread(VirtualKey.Shift)
+            .HasFlag(CoreVirtualKeyStates.Down);
+
+        if (shiftPressed)
+        {
+            if (_viewModel.RedoCommand.CanExecute(null))
+            {
+                _viewModel.RedoCommand.Execute(null);
+                e.Handled = true;
+            }
+
+            return;
+        }
+
+        if (_viewModel.UndoCommand.CanExecute(null))
+        {
+            _viewModel.UndoCommand.Execute(null);
+            e.Handled = true;
+        }
+    }
+#endif
 }

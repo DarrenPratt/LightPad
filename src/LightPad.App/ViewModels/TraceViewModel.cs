@@ -37,6 +37,8 @@ public sealed class TraceViewModel : BaseViewModel
     private double _surfaceColorTemperature;
     private LightColorPreset _surfacePreset;
     private string _surfaceCustomColorHex;
+    private TraceImageSnapshot? _pendingInteractionSnapshot;
+    private bool _isApplyingHistory;
 
     public TraceViewModel(
         TraceSessionState sessionState,
@@ -79,6 +81,8 @@ public sealed class TraceViewModel : BaseViewModel
         ZoomInCommand = new Command(() => NudgeZoom(0.15), () => HasImage && !IsBusy);
         RotateLeftCommand = new Command(() => NudgeRotation(-RotationStep), () => CanManipulateImage && !IsBusy);
         RotateRightCommand = new Command(() => NudgeRotation(RotationStep), () => CanManipulateImage && !IsBusy);
+        UndoCommand = new Command(Undo, () => CanUndo && !IsBusy);
+        RedoCommand = new Command(Redo, () => CanRedo && !IsBusy);
         ToggleGridCommand = new Command(ToggleGrid);
         ToggleControlsCommand = new Command(ToggleControls);
     }
@@ -102,6 +106,10 @@ public sealed class TraceViewModel : BaseViewModel
     public Command RotateLeftCommand { get; }
 
     public Command RotateRightCommand { get; }
+
+    public Command UndoCommand { get; }
+
+    public Command RedoCommand { get; }
 
     public Command ToggleGridCommand { get; }
 
@@ -294,6 +302,10 @@ public sealed class TraceViewModel : BaseViewModel
 
     public bool IsFloatingShowToolsVisible => !IsControlsExpanded;
 
+    public bool CanUndo => SessionState.CanUndo;
+
+    public bool CanRedo => SessionState.CanRedo;
+
     public string LockButtonText => IsImageLocked ? "Unlock Image" : "Lock Image";
 
     public string GridButtonText => IsGridVisible ? "Hide Grid" : "Show Grid";
@@ -373,9 +385,11 @@ public sealed class TraceViewModel : BaseViewModel
                 return;
             }
 
+            var priorState = CaptureSnapshot();
             ImagePath = selectedImagePath;
             ImageOpacity = _settingsService.DefaultTraceOpacity;
-            ResetView();
+            ResetView(recordHistory: false);
+            CommitUndoableChange(priorState);
             UpdateStatusMessage($"Loaded {Path.GetFileName(selectedImagePath)} for tracing.");
         }
         catch (Exception exception)
@@ -390,10 +404,21 @@ public sealed class TraceViewModel : BaseViewModel
 
     private void ResetView()
     {
+        ResetView(recordHistory: true);
+    }
+
+    private void ResetView(bool recordHistory)
+    {
+        var priorState = CaptureSnapshot();
         OffsetX = 0.0;
         OffsetY = 0.0;
         Zoom = 1.0;
         RotationAngle = 0.0;
+        if (recordHistory)
+        {
+            CommitUndoableChange(priorState);
+        }
+
         if (HasImage)
         {
             UpdateStatusMessage($"Reset view for {ImageName}.");
@@ -420,6 +445,8 @@ public sealed class TraceViewModel : BaseViewModel
         ZoomInCommand.ChangeCanExecute();
         RotateLeftCommand.ChangeCanExecute();
         RotateRightCommand.ChangeCanExecute();
+        UndoCommand.ChangeCanExecute();
+        RedoCommand.ChangeCanExecute();
     }
 
     private void ClearImage()
@@ -429,6 +456,7 @@ public sealed class TraceViewModel : BaseViewModel
             return;
         }
 
+        var priorState = CaptureSnapshot();
         ImagePath = null;
         OffsetX = 0.0;
         OffsetY = 0.0;
@@ -436,6 +464,7 @@ public sealed class TraceViewModel : BaseViewModel
         RotationAngle = 0.0;
         ImageOpacity = _settingsService.DefaultTraceOpacity;
         IsImageLocked = false;
+        CommitUndoableChange(priorState);
         UpdateStatusMessage("Trace image cleared. Import a new reference image to continue.");
     }
 
@@ -446,7 +475,9 @@ public sealed class TraceViewModel : BaseViewModel
             return;
         }
 
+        var priorState = CaptureSnapshot();
         Zoom += delta;
+        CommitUndoableChange(priorState);
     }
 
     private void NudgeRotation(double delta)
@@ -456,7 +487,9 @@ public sealed class TraceViewModel : BaseViewModel
             return;
         }
 
+        var priorState = CaptureSnapshot();
         RotationAngle = _rotation + delta;
+        CommitUndoableChange(priorState);
     }
 
     private void ToggleControls()
@@ -467,6 +500,64 @@ public sealed class TraceViewModel : BaseViewModel
     private void ToggleGrid()
     {
         IsGridVisible = !IsGridVisible;
+    }
+
+    private void Undo()
+    {
+        if (!SessionState.TryPopUndo(out var previousState))
+        {
+            return;
+        }
+
+        var currentState = CaptureSnapshot();
+        ApplySnapshot(previousState);
+        SessionState.PushRedoState(currentState);
+        NotifyHistoryChanged();
+        UpdateStatusMessage(HasImage
+            ? $"Undo applied to {ImageName}."
+            : "Undo applied.");
+    }
+
+    private void Redo()
+    {
+        if (!SessionState.TryPopRedo(out var nextState))
+        {
+            return;
+        }
+
+        var currentState = CaptureSnapshot();
+        ApplySnapshot(nextState);
+        SessionState.PushUndoState(currentState);
+        NotifyHistoryChanged();
+        UpdateStatusMessage(HasImage
+            ? $"Redo applied to {ImageName}."
+            : "Redo applied.");
+    }
+
+    public void BeginInteractionHistoryCapture()
+    {
+        if (_isApplyingHistory || _pendingInteractionSnapshot is not null)
+        {
+            return;
+        }
+
+        _pendingInteractionSnapshot = CaptureSnapshot();
+    }
+
+    public void CommitInteractionHistoryCapture()
+    {
+        if (_pendingInteractionSnapshot is not { } pendingSnapshot)
+        {
+            return;
+        }
+
+        _pendingInteractionSnapshot = null;
+        CommitUndoableChange(pendingSnapshot);
+    }
+
+    public void CancelInteractionHistoryCapture()
+    {
+        _pendingInteractionSnapshot = null;
     }
 
     private void UpdateStatusMessage(string? overrideMessage = null)
@@ -495,5 +586,61 @@ public sealed class TraceViewModel : BaseViewModel
         }
 
         return normalized;
+    }
+
+    private TraceImageSnapshot CaptureSnapshot()
+    {
+        return new TraceImageSnapshot(
+            ImagePath,
+            OffsetX,
+            OffsetY,
+            Zoom,
+            RotationAngle,
+            ImageOpacity,
+            IsImageLocked);
+    }
+
+    private void ApplySnapshot(TraceImageSnapshot snapshot)
+    {
+        _isApplyingHistory = true;
+        try
+        {
+            ImagePath = snapshot.FilePath;
+            OffsetX = snapshot.OffsetX;
+            OffsetY = snapshot.OffsetY;
+            Zoom = snapshot.Zoom;
+            RotationAngle = snapshot.Rotation;
+            ImageOpacity = snapshot.Opacity;
+            IsImageLocked = snapshot.IsLocked;
+        }
+        finally
+        {
+            _isApplyingHistory = false;
+        }
+    }
+
+    private void CommitUndoableChange(TraceImageSnapshot priorState)
+    {
+        if (_isApplyingHistory)
+        {
+            return;
+        }
+
+        var currentState = CaptureSnapshot();
+        if (priorState.Equals(currentState))
+        {
+            return;
+        }
+
+        _pendingInteractionSnapshot = null;
+        SessionState.PushUndoState(priorState);
+        NotifyHistoryChanged();
+    }
+
+    private void NotifyHistoryChanged()
+    {
+        OnPropertyChanged(nameof(CanUndo));
+        OnPropertyChanged(nameof(CanRedo));
+        RaiseCommandStateChanged();
     }
 }
