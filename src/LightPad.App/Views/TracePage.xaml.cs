@@ -1,5 +1,9 @@
 using System.ComponentModel;
+using System.Threading;
+using System.Threading.Tasks;
 using LightPad.App.Infrastructure;
+using LightPad.App.Services;
+using LightPad.App.Utilities;
 using LightPad.App.ViewModels;
 using SkiaSharp;
 using SkiaSharp.Views.Maui;
@@ -10,35 +14,44 @@ namespace LightPad.App.Views;
 public partial class TracePage : ContentPage
 {
     private readonly TraceViewModel _viewModel;
+    private readonly ISettingsService _settingsService;
     private double _panStartX;
     private double _panStartY;
     private double _pinchStartScale;
     private SKBitmap? _traceBitmap;
     private string? _loadedBitmapPath;
+    private CancellationTokenSource? _gestureHintDismissalCts;
+    private bool _isGestureHintVisible;
 
     public TracePage()
-        : this(ServiceProviderHelper.GetRequiredService<TraceViewModel>())
+        : this(
+            ServiceProviderHelper.GetRequiredService<TraceViewModel>(),
+            ServiceProviderHelper.GetRequiredService<ISettingsService>())
     {
     }
 
-    public TracePage(TraceViewModel viewModel)
+    public TracePage(TraceViewModel viewModel, ISettingsService settingsService)
     {
         InitializeComponent();
         _viewModel = viewModel;
+        _settingsService = settingsService;
         _viewModel.PropertyChanged += OnViewModelPropertyChanged;
         BindingContext = viewModel;
+        ConfigureGestureHint();
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
         await _viewModel.OnAppearingAsync();
+        ShowGestureHintIfNeeded();
         LoadBitmapIfNeeded();
         TraceCanvas.InvalidateSurface();
     }
 
     protected override async void OnDisappearing()
     {
+        CancelGestureHintDismissal();
         await _viewModel.OnDisappearingAsync();
         base.OnDisappearing();
     }
@@ -47,6 +60,7 @@ public partial class TracePage : ContentPage
     {
         if (args.NewHandler is null)
         {
+            CancelGestureHintDismissal();
             _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
             DisposeBitmap();
         }
@@ -66,6 +80,7 @@ public partial class TracePage : ContentPage
             or nameof(TraceViewModel.OffsetX)
             or nameof(TraceViewModel.OffsetY)
             or nameof(TraceViewModel.Zoom)
+            or nameof(TraceViewModel.RotationAngle)
             or nameof(TraceViewModel.ImageOpacity)
             or nameof(TraceViewModel.IsGridVisible)
             or nameof(TraceViewModel.GridSpacing)
@@ -118,12 +133,21 @@ public partial class TracePage : ContentPage
         };
         var sampling = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None);
         using var image = SKImage.FromBitmap(_traceBitmap);
+        var centerX = targetRect.MidX;
+        var centerY = targetRect.MidY;
 
+        canvas.Save();
+        canvas.Translate(centerX, centerY);
+        canvas.RotateDegrees((float)_viewModel.RotationAngle);
+        canvas.Translate(-centerX, -centerY);
         canvas.DrawImage(image, targetRect, sampling, bitmapPaint);
+        canvas.Restore();
     }
 
     private void OnImagePanUpdated(object? sender, PanUpdatedEventArgs e)
     {
+        DismissGestureHintForInteraction();
+
         if (!_viewModel.CanManipulateImage)
         {
             return;
@@ -143,6 +167,8 @@ public partial class TracePage : ContentPage
 
     private void OnImagePinchUpdated(object? sender, PinchGestureUpdatedEventArgs e)
     {
+        DismissGestureHintForInteraction();
+
         if (!_viewModel.CanManipulateImage)
         {
             return;
@@ -161,10 +187,17 @@ public partial class TracePage : ContentPage
 
     private void OnTraceSurfaceDoubleTapped(object? sender, TappedEventArgs e)
     {
+        DismissGestureHintForInteraction();
+
         if (_viewModel.ResetViewCommand.CanExecute(null))
         {
             _viewModel.ResetViewCommand.Execute(null);
         }
+    }
+
+    private void OnGestureHintDismissed(object? sender, EventArgs e)
+    {
+        DismissGestureHint();
     }
 
     private void LoadBitmapIfNeeded()
@@ -202,58 +235,81 @@ public partial class TracePage : ContentPage
         _loadedBitmapPath = null;
     }
 
-    private void DrawGrid(SKCanvas canvas, SKRoundRect paperBounds)
+    private void ConfigureGestureHint()
     {
-        if (!_viewModel.IsGridVisible)
+        var hint = GestureHintContentFactory.CreateTraceHint();
+        GestureHintTitleLabel.Text = hint.Title;
+        GestureHintSubtitleLabel.Text = hint.Subtitle;
+
+        foreach (var tip in hint.Tips)
+        {
+            GestureHintTipsLayout.Children.Add(new Label
+            {
+                Text = $"• {tip}",
+                TextColor = Colors.White,
+                LineBreakMode = LineBreakMode.WordWrap
+            });
+        }
+    }
+
+    private void ShowGestureHintIfNeeded()
+    {
+        if (_settingsService.HasSeenTraceGestureHint || _isGestureHintVisible)
         {
             return;
         }
 
-        var paperRect = paperBounds.Rect;
-        var majorSpacing = (float)_viewModel.GridSpacing;
-        var minorSpacing = Math.Max(majorSpacing / 2f, 8f);
-        var lineColor = ResolveGridColor();
-        var accentColor = lineColor.WithAlpha((byte)Math.Min(255, lineColor.Alpha + 35));
-
-        canvas.Save();
-        canvas.ClipRoundRect(paperBounds, antialias: true);
-
-        using var minorPaint = new SKPaint
-        {
-            Color = lineColor,
-            StrokeWidth = 1f,
-            IsAntialias = true
-        };
-
-        using var majorPaint = new SKPaint
-        {
-            Color = accentColor,
-            StrokeWidth = 1.4f,
-            IsAntialias = true
-        };
-
-        DrawGridLines(canvas, paperRect, minorSpacing, minorPaint);
-        DrawGridLines(canvas, paperRect, majorSpacing, majorPaint);
-        canvas.Restore();
+        _settingsService.HasSeenTraceGestureHint = true;
+        _isGestureHintVisible = true;
+        GestureHintOverlay.IsVisible = true;
+        StartGestureHintDismissalTimer();
     }
 
-    private static void DrawGridLines(SKCanvas canvas, SKRect bounds, float spacing, SKPaint paint)
+    private void DismissGestureHintForInteraction()
     {
-        for (var x = bounds.Left + spacing; x < bounds.Right; x += spacing)
+        if (!_isGestureHintVisible)
         {
-            canvas.DrawLine(x, bounds.Top, x, bounds.Bottom, paint);
+            return;
         }
 
-        for (var y = bounds.Top + spacing; y < bounds.Bottom; y += spacing)
+        DismissGestureHint();
+    }
+
+    private void DismissGestureHint()
+    {
+        if (!_isGestureHintVisible)
         {
-            canvas.DrawLine(bounds.Left, y, bounds.Right, y, paint);
+            return;
+        }
+
+        CancelGestureHintDismissal();
+        _isGestureHintVisible = false;
+        GestureHintOverlay.IsVisible = false;
+    }
+
+    private void StartGestureHintDismissalTimer()
+    {
+        CancelGestureHintDismissal();
+        _gestureHintDismissalCts = new CancellationTokenSource();
+        _ = DismissGestureHintAfterDelayAsync(_gestureHintDismissalCts.Token);
+    }
+
+    private async Task DismissGestureHintAfterDelayAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+            await MainThread.InvokeOnMainThreadAsync(DismissGestureHint);
+        }
+        catch (OperationCanceledException)
+        {
         }
     }
 
-    private SKColor ResolveGridColor()
+    private void CancelGestureHintDismissal()
     {
-        return _viewModel.TraceBackdropOverlayOpacity > 0.45
-            ? SKColor.Parse("#88FFF7CF")
-            : SKColor.Parse("#884A4332");
+        _gestureHintDismissalCts?.Cancel();
+        _gestureHintDismissalCts?.Dispose();
+        _gestureHintDismissalCts = null;
     }
 }

@@ -11,6 +11,7 @@
 - Initial UI ownership assigned for MAUI interaction and experience design.
 - **Architecture:** MVVM structure with solid separation between Views (XAML), ViewModels, Models, and Services. SkiaSharp used for advanced image rendering (zoom, rotation) in Trace/Animation modes.
 - **Touch-first design considerations:** LightboxPage and TracePage use tap gesture recognition for lock toggling. Auto-hide pattern implemented but timing may need refinement. Surface Pen and stylus support require careful gesture handling to avoid accidental triggers during precision work.
+- Trace rotation is driven by TraceViewModel.RotationAngle, persisted in TraceImageState.Rotation, and rendered via SkiaSharp canvas rotation in TracePage.
 - **UX gaps identified (2026-05-01):** 
   - No visual gesture hints on first launch (users discover pinch/zoom/rotate by trial)
   - Missing undo/redo in Trace mode for image state changes
@@ -27,3 +28,8 @@
 - Decision confirmed: prioritize gesture hints (#2) + quick presets (#10) as high-value; haptics (#6) + control timing (#8) as medium; undo/redo (#4) as nice-to-have.
 - Cross-team decisions now merged: Session Persistence Strategy (Ripley), Platform Risk Assessment (Bishop) also entered ledger.
 - Decision inbox cleared (3 items processed).
+
+### 2026-05-01T17:47:28Z (Hicks Implementation)
+- Implemented issue #1
+- Opened PR #20
+- Ran build successfully

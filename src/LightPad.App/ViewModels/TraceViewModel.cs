@@ -14,8 +14,7 @@ public sealed class TraceViewModel : BaseViewModel
 {
     private const double MinZoom = 0.5;
     private const double MaxZoom = 4.0;
-    private const double MinGridSpacing = 16.0;
-    private const double MaxGridSpacing = 160.0;
+    private const double RotationStep = 5.0;
     private readonly IImagePickerService _imagePickerService;
     private readonly IScreenWakeService _screenWakeService;
     private readonly ISettingsService _settingsService;
@@ -23,6 +22,7 @@ public sealed class TraceViewModel : BaseViewModel
     private double _offsetX;
     private double _offsetY;
     private double _zoom;
+    private double _rotation;
     private double _imageOpacity;
     private bool _isImageLocked;
     private string? _imagePath;
@@ -51,6 +51,7 @@ public sealed class TraceViewModel : BaseViewModel
         _offsetX = _activeImage.OffsetX;
         _offsetY = _activeImage.OffsetY;
         _zoom = LightSurfaceStyleCalculator.Clamp(_activeImage.Zoom, MinZoom, MaxZoom);
+        _rotation = NormalizeRotation(_activeImage.Rotation);
         _imageOpacity = LightSurfaceStyleCalculator.Clamp(
             _activeImage.FilePath is null ? settingsService.DefaultTraceOpacity : _activeImage.Opacity,
             0.1,
@@ -63,6 +64,7 @@ public sealed class TraceViewModel : BaseViewModel
         _surfacePreset = settingsService.SelectedPreset;
         _surfaceCustomColorHex = LightSurfaceStyleCalculator.NormalizeHexOrDefault(settingsService.CustomColorHex, "#FFFFFF");
         _statusMessage = CreateStatusMessage();
+        _activeImage.Rotation = _rotation;
         _activeImage.Opacity = _imageOpacity;
         SessionState.GridSpacing = _gridSpacing;
 
@@ -73,7 +75,8 @@ public sealed class TraceViewModel : BaseViewModel
         ClearImageCommand = new Command(ClearImage, () => HasImage && !IsBusy);
         ZoomOutCommand = new Command(() => NudgeZoom(-0.15), () => HasImage && !IsBusy);
         ZoomInCommand = new Command(() => NudgeZoom(0.15), () => HasImage && !IsBusy);
-        ToggleGridCommand = new Command(ToggleGrid);
+        RotateLeftCommand = new Command(() => NudgeRotation(-RotationStep), () => CanManipulateImage && !IsBusy);
+        RotateRightCommand = new Command(() => NudgeRotation(RotationStep), () => CanManipulateImage && !IsBusy);
         ToggleControlsCommand = new Command(ToggleControls);
     }
 
@@ -93,7 +96,9 @@ public sealed class TraceViewModel : BaseViewModel
 
     public Command ZoomInCommand { get; }
 
-    public Command ToggleGridCommand { get; }
+    public Command RotateLeftCommand { get; }
+
+    public Command RotateRightCommand { get; }
 
     public Command ToggleControlsCommand { get; }
 
@@ -167,6 +172,22 @@ public sealed class TraceViewModel : BaseViewModel
         }
     }
 
+    public double RotationAngle
+    {
+        get => _rotation;
+        set
+        {
+            var normalizedValue = NormalizeRotation(value);
+            if (!SetProperty(ref _rotation, normalizedValue))
+            {
+                return;
+            }
+
+            _activeImage.Rotation = normalizedValue;
+            UpdateStatusMessage();
+        }
+    }
+
     public double ImageOpacity
     {
         get => _imageOpacity;
@@ -198,6 +219,7 @@ public sealed class TraceViewModel : BaseViewModel
             OnPropertyChanged(nameof(LockButtonText));
             OnPropertyChanged(nameof(LockStatusText));
             OnPropertyChanged(nameof(CanManipulateImage));
+            RaiseCommandStateChanged();
             UpdateStatusMessage();
         }
     }
@@ -366,6 +388,7 @@ public sealed class TraceViewModel : BaseViewModel
         OffsetX = 0.0;
         OffsetY = 0.0;
         Zoom = 1.0;
+        RotationAngle = 0.0;
         if (HasImage)
         {
             UpdateStatusMessage($"Reset view for {ImageName}.");
@@ -390,6 +413,8 @@ public sealed class TraceViewModel : BaseViewModel
         ClearImageCommand.ChangeCanExecute();
         ZoomOutCommand.ChangeCanExecute();
         ZoomInCommand.ChangeCanExecute();
+        RotateLeftCommand.ChangeCanExecute();
+        RotateRightCommand.ChangeCanExecute();
     }
 
     private void ClearImage()
@@ -403,6 +428,7 @@ public sealed class TraceViewModel : BaseViewModel
         OffsetX = 0.0;
         OffsetY = 0.0;
         Zoom = 1.0;
+        RotationAngle = 0.0;
         ImageOpacity = _settingsService.DefaultTraceOpacity;
         IsImageLocked = false;
         UpdateStatusMessage("Trace image cleared. Import a new reference image to continue.");
@@ -416,6 +442,16 @@ public sealed class TraceViewModel : BaseViewModel
         }
 
         Zoom += delta;
+    }
+
+    private void NudgeRotation(double delta)
+    {
+        if (!CanManipulateImage)
+        {
+            return;
+        }
+
+        RotationAngle = _rotation + delta;
     }
 
     private void ToggleControls()
@@ -441,7 +477,17 @@ public sealed class TraceViewModel : BaseViewModel
             return "No trace image loaded yet. Import a single image to start panning and zooming.";
         }
 
-        var gridText = IsGridVisible ? $"grid {GridSpacing:0}px" : "grid off";
-        return $"{ImageName}: zoom {Zoom:0.00}x, opacity {ImageOpacity:P0}, {gridText}, offset ({OffsetX:0}, {OffsetY:0}).";
+        return $"{ImageName}: zoom {Zoom:0.00}x, rotation {RotationAngle:0}°, opacity {ImageOpacity:P0}, offset ({OffsetX:0}, {OffsetY:0}).";
+    }
+
+    private static double NormalizeRotation(double value)
+    {
+        var normalized = value % 360.0;
+        if (normalized < 0)
+        {
+            normalized += 360.0;
+        }
+
+        return normalized;
     }
 }

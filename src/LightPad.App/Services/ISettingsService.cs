@@ -13,4 +13,8 @@ public interface ISettingsService
     string CustomColorHex { get; set; }
 
     double DefaultTraceOpacity { get; set; }
+
+    bool HasSeenTraceGestureHint { get; set; }
+
+    bool HasSeenAnimationGestureHint { get; set; }
 }

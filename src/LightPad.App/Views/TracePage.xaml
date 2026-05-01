@@ -247,36 +247,82 @@
                                     MaximumTrackColor="#4A4A4A"
                                     HeightRequest="40" />
 
-                            <Grid ColumnDefinitions="*,Auto,Auto"
+                            <Grid ColumnDefinitions="*,Auto,Auto,Auto"
                                   ColumnSpacing="10">
-                                <Label Text="Grid Overlay"
+                                <Label Text="Rotation"
                                        TextColor="White"
                                        FontAttributes="Bold"
                                        VerticalOptions="Center" />
                                 <Button Grid.Column="1"
-                                        Text="{Binding GridButtonText}"
-                                        Command="{Binding ToggleGridCommand}"
+                                        Text="Rotate -"
+                                        Command="{Binding RotateLeftCommand}"
                                         BackgroundColor="#333333"
                                         TextColor="White"
                                         CornerRadius="20"
                                         MinimumHeightRequest="44"
-                                        Padding="16,10" />
-                                <Label Grid.Column="2"
-                                       Text="{Binding GridSpacing, StringFormat='{0:0}px'}"
+                                        MinimumWidthRequest="90"
+                                        IsEnabled="{Binding CanManipulateImage}" />
+                                <Button Grid.Column="2"
+                                        Text="Rotate +"
+                                        Command="{Binding RotateRightCommand}"
+                                        BackgroundColor="#333333"
+                                        TextColor="White"
+                                        CornerRadius="20"
+                                        MinimumHeightRequest="44"
+                                        MinimumWidthRequest="90"
+                                        IsEnabled="{Binding CanManipulateImage}" />
+                                <Label Grid.Column="3"
+                                       Text="{Binding RotationAngle, StringFormat='{0:0}°'}"
                                        TextColor="White"
                                        VerticalOptions="Center" />
                             </Grid>
 
-                            <Slider Minimum="16"
-                                    Maximum="160"
-                                    Value="{Binding GridSpacing}"
+                            <Slider Minimum="0"
+                                    Maximum="360"
+                                    Value="{Binding RotationAngle}"
                                     ThumbColor="#F5E7A1"
                                     MinimumTrackColor="#F5E7A1"
                                     MaximumTrackColor="#4A4A4A"
-                                    HeightRequest="40" />
+                                    HeightRequest="40"
+                                    IsEnabled="{Binding CanManipulateImage}" />
                         </VerticalStackLayout>
                     </ScrollView>
                 </Border>
+
+                <Grid x:Name="GestureHintOverlay"
+                      BackgroundColor="#B8141414"
+                      IsVisible="False"
+                      InputTransparent="False">
+                    <Border BackgroundColor="#EE1B1B1B"
+                            Stroke="#40F5E7A1"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 28"
+                            Padding="22"
+                            Margin="24"
+                            MaximumWidthRequest="420"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center">
+                        <VerticalStackLayout Spacing="14">
+                            <Label x:Name="GestureHintTitleLabel"
+                                   TextColor="#F5E7A1"
+                                   FontAttributes="Bold"
+                                   FontSize="20" />
+                            <Label x:Name="GestureHintSubtitleLabel"
+                                   TextColor="#E8FFFFFF"
+                                   LineBreakMode="WordWrap" />
+                            <VerticalStackLayout x:Name="GestureHintTipsLayout"
+                                                 Spacing="10" />
+                            <Button Text="Dismiss"
+                                    Clicked="OnGestureHintDismissed"
+                                    BackgroundColor="#F5E7A1"
+                                    TextColor="Black"
+                                    CornerRadius="20"
+                                    Padding="16,10"
+                                    HorizontalOptions="End"
+                                    MinimumHeightRequest="44" />
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
             </Grid>
         </Border>
     </Grid>
