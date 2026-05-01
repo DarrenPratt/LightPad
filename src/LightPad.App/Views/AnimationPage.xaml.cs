@@ -2,7 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using LightPad.App.Infrastructure;
+using LightPad.App.Services;
+using LightPad.App.Utilities;
 using LightPad.App.ViewModels;
 using SkiaSharp;
 using SkiaSharp.Views.Maui;
@@ -12,33 +16,42 @@ namespace LightPad.App.Views;
 public partial class AnimationPage : ContentPage
 {
     private readonly AnimationViewModel _viewModel;
+    private readonly ISettingsService _settingsService;
     private readonly Dictionary<string, SKBitmap> _bitmapCache = new(StringComparer.OrdinalIgnoreCase);
     private double _panStartX;
     private double _panStartY;
     private double _pinchStartScale;
+    private CancellationTokenSource? _gestureHintDismissalCts;
+    private bool _isGestureHintVisible;
 
     public AnimationPage()
-        : this(ServiceProviderHelper.GetRequiredService<AnimationViewModel>())
+        : this(
+            ServiceProviderHelper.GetRequiredService<AnimationViewModel>(),
+            ServiceProviderHelper.GetRequiredService<ISettingsService>())
     {
     }
 
-    public AnimationPage(AnimationViewModel viewModel)
+    public AnimationPage(AnimationViewModel viewModel, ISettingsService settingsService)
     {
         InitializeComponent();
         _viewModel = viewModel;
+        _settingsService = settingsService;
         _viewModel.PropertyChanged += OnViewModelPropertyChanged;
         BindingContext = viewModel;
+        ConfigureGestureHint();
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
         await _viewModel.OnAppearingAsync();
+        ShowGestureHintIfNeeded();
         AnimationCanvas.InvalidateSurface();
     }
 
     protected override async void OnDisappearing()
     {
+        CancelGestureHintDismissal();
         await _viewModel.OnDisappearingAsync();
         base.OnDisappearing();
     }
@@ -47,6 +60,7 @@ public partial class AnimationPage : ContentPage
     {
         if (args.NewHandler is null)
         {
+            CancelGestureHintDismissal();
             _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
             DisposeBitmaps();
         }
@@ -103,6 +117,8 @@ public partial class AnimationPage : ContentPage
 
     private void OnFramePanUpdated(object? sender, PanUpdatedEventArgs e)
     {
+        DismissGestureHintForInteraction();
+
         if (!_viewModel.CanManipulateFrames)
         {
             return;
@@ -122,6 +138,8 @@ public partial class AnimationPage : ContentPage
 
     private void OnFramePinchUpdated(object? sender, PinchGestureUpdatedEventArgs e)
     {
+        DismissGestureHintForInteraction();
+
         if (!_viewModel.CanManipulateFrames)
         {
             return;
@@ -140,10 +158,17 @@ public partial class AnimationPage : ContentPage
 
     private void OnAnimationSurfaceDoubleTapped(object? sender, TappedEventArgs e)
     {
+        DismissGestureHintForInteraction();
+
         if (_viewModel.ResetViewCommand.CanExecute(null))
         {
             _viewModel.ResetViewCommand.Execute(null);
         }
+    }
+
+    private void OnGestureHintDismissed(object? sender, EventArgs e)
+    {
+        DismissGestureHint();
     }
 
     private void DrawFrame(SKCanvas canvas, SKImageInfo info, string imagePath, double opacity)
@@ -210,5 +235,83 @@ public partial class AnimationPage : ContentPage
         }
 
         _bitmapCache.Clear();
+    }
+
+    private void ConfigureGestureHint()
+    {
+        var hint = GestureHintContentFactory.CreateAnimationHint();
+        GestureHintTitleLabel.Text = hint.Title;
+        GestureHintSubtitleLabel.Text = hint.Subtitle;
+
+        foreach (var tip in hint.Tips)
+        {
+            GestureHintTipsLayout.Children.Add(new Label
+            {
+                Text = $"• {tip}",
+                TextColor = Colors.White,
+                LineBreakMode = LineBreakMode.WordWrap
+            });
+        }
+    }
+
+    private void ShowGestureHintIfNeeded()
+    {
+        if (_settingsService.HasSeenAnimationGestureHint || _isGestureHintVisible)
+        {
+            return;
+        }
+
+        _settingsService.HasSeenAnimationGestureHint = true;
+        _isGestureHintVisible = true;
+        GestureHintOverlay.IsVisible = true;
+        StartGestureHintDismissalTimer();
+    }
+
+    private void DismissGestureHintForInteraction()
+    {
+        if (!_isGestureHintVisible)
+        {
+            return;
+        }
+
+        DismissGestureHint();
+    }
+
+    private void DismissGestureHint()
+    {
+        if (!_isGestureHintVisible)
+        {
+            return;
+        }
+
+        CancelGestureHintDismissal();
+        _isGestureHintVisible = false;
+        GestureHintOverlay.IsVisible = false;
+    }
+
+    private void StartGestureHintDismissalTimer()
+    {
+        CancelGestureHintDismissal();
+        _gestureHintDismissalCts = new CancellationTokenSource();
+        _ = DismissGestureHintAfterDelayAsync(_gestureHintDismissalCts.Token);
+    }
+
+    private async Task DismissGestureHintAfterDelayAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+            await MainThread.InvokeOnMainThreadAsync(DismissGestureHint);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    private void CancelGestureHintDismissal()
+    {
+        _gestureHintDismissalCts?.Cancel();
+        _gestureHintDismissalCts?.Dispose();
+        _gestureHintDismissalCts = null;
     }
 }
