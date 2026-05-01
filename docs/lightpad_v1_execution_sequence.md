@@ -210,6 +210,8 @@ Exit criteria:
 
 ### Phase 6: Android validation and parity fixes
 
+Status: Complete on 2026-05-01.
+
 Goal: confirm the shared implementation survives the second target platform.
 
 Work:
@@ -228,6 +230,11 @@ Exit criteria:
 
 - Android can complete the same v1 workflows as Windows
 - any platform-specific differences are documented and acceptable
+
+Implementation notes:
+
+- Android image import now normalizes picker results into app-local cache files so `content://` sources load reliably in trace mode.
+- Android app activity now reapplies immersive fullscreen behavior when the window regains focus to maintain parity with Windows fullscreen usage.
 
 ## Recommended Backlog Order
 

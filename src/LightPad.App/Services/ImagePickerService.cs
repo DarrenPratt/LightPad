@@ -21,6 +21,26 @@ public sealed class ImagePickerService : IImagePickerService
             return null;
         }
 
-        return result.FullPath;
+        if (!string.IsNullOrWhiteSpace(result.FullPath) && File.Exists(result.FullPath))
+        {
+            return result.FullPath;
+        }
+
+        await using var sourceStream = await result.OpenReadAsync();
+        var extension = Path.GetExtension(result.FileName);
+        if (string.IsNullOrWhiteSpace(extension))
+        {
+            extension = ".img";
+        }
+
+        var safeFileName = $"trace-{Guid.NewGuid():N}{extension}";
+        var localPath = Path.Combine(FileSystem.CacheDirectory, safeFileName);
+
+        await using (var destinationStream = File.Create(localPath))
+        {
+            await sourceStream.CopyToAsync(destinationStream, cancellationToken);
+        }
+
+        return localPath;
     }
 }
