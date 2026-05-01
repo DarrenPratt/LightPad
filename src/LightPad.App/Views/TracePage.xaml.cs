@@ -235,6 +235,61 @@ public partial class TracePage : ContentPage
         _loadedBitmapPath = null;
     }
 
+    private void DrawGrid(SKCanvas canvas, SKRoundRect paperBounds)
+    {
+        if (!_viewModel.IsGridVisible)
+        {
+            return;
+        }
+
+        var paperRect = paperBounds.Rect;
+        var majorSpacing = (float)_viewModel.GridSpacing;
+        var minorSpacing = Math.Max(majorSpacing / 2f, 8f);
+        var lineColor = ResolveGridColor();
+        var accentColor = lineColor.WithAlpha((byte)Math.Min(255, lineColor.Alpha + 35));
+
+        canvas.Save();
+        canvas.ClipRoundRect(paperBounds, antialias: true);
+
+        using var minorPaint = new SKPaint
+        {
+            Color = lineColor,
+            StrokeWidth = 1f,
+            IsAntialias = true
+        };
+
+        using var majorPaint = new SKPaint
+        {
+            Color = accentColor,
+            StrokeWidth = 1.4f,
+            IsAntialias = true
+        };
+
+        DrawGridLines(canvas, paperRect, minorSpacing, minorPaint);
+        DrawGridLines(canvas, paperRect, majorSpacing, majorPaint);
+        canvas.Restore();
+    }
+
+    private static void DrawGridLines(SKCanvas canvas, SKRect bounds, float spacing, SKPaint paint)
+    {
+        for (var x = bounds.Left + spacing; x < bounds.Right; x += spacing)
+        {
+            canvas.DrawLine(x, bounds.Top, x, bounds.Bottom, paint);
+        }
+
+        for (var y = bounds.Top + spacing; y < bounds.Bottom; y += spacing)
+        {
+            canvas.DrawLine(bounds.Left, y, bounds.Right, y, paint);
+        }
+    }
+
+    private SKColor ResolveGridColor()
+    {
+        return _viewModel.TraceBackdropOverlayOpacity > 0.45
+            ? SKColor.Parse("#88FFF7CF")
+            : SKColor.Parse("#884A4332");
+    }
+
     private void ConfigureGestureHint()
     {
         var hint = GestureHintContentFactory.CreateTraceHint();

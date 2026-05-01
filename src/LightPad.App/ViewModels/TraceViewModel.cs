@@ -14,6 +14,8 @@ public sealed class TraceViewModel : BaseViewModel
 {
     private const double MinZoom = 0.5;
     private const double MaxZoom = 4.0;
+    private const double MinGridSpacing = 16.0;
+    private const double MaxGridSpacing = 160.0;
     private const double RotationStep = 5.0;
     private readonly IImagePickerService _imagePickerService;
     private readonly IScreenWakeService _screenWakeService;
@@ -77,6 +79,7 @@ public sealed class TraceViewModel : BaseViewModel
         ZoomInCommand = new Command(() => NudgeZoom(0.15), () => HasImage && !IsBusy);
         RotateLeftCommand = new Command(() => NudgeRotation(-RotationStep), () => CanManipulateImage && !IsBusy);
         RotateRightCommand = new Command(() => NudgeRotation(RotationStep), () => CanManipulateImage && !IsBusy);
+        ToggleGridCommand = new Command(ToggleGrid);
         ToggleControlsCommand = new Command(ToggleControls);
     }
 
@@ -99,6 +102,8 @@ public sealed class TraceViewModel : BaseViewModel
     public Command RotateLeftCommand { get; }
 
     public Command RotateRightCommand { get; }
+
+    public Command ToggleGridCommand { get; }
 
     public Command ToggleControlsCommand { get; }
 
@@ -477,7 +482,8 @@ public sealed class TraceViewModel : BaseViewModel
             return "No trace image loaded yet. Import a single image to start panning and zooming.";
         }
 
-        return $"{ImageName}: zoom {Zoom:0.00}x, rotation {RotationAngle:0}°, opacity {ImageOpacity:P0}, offset ({OffsetX:0}, {OffsetY:0}).";
+        var gridText = IsGridVisible ? $"grid {GridSpacing:0}px" : "grid off";
+        return $"{ImageName}: zoom {Zoom:0.00}x, rotation {RotationAngle:0}°, opacity {ImageOpacity:P0}, {gridText}, offset ({OffsetX:0}, {OffsetY:0}).";
     }
 
     private static double NormalizeRotation(double value)

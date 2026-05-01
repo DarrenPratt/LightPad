@@ -285,6 +285,34 @@
                                     MaximumTrackColor="#4A4A4A"
                                     HeightRequest="40"
                                     IsEnabled="{Binding CanManipulateImage}" />
+
+                            <Grid ColumnDefinitions="*,Auto,Auto"
+                                  ColumnSpacing="10">
+                                <Label Text="Grid Overlay"
+                                       TextColor="White"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center" />
+                                <Button Grid.Column="1"
+                                        Text="{Binding GridButtonText}"
+                                        Command="{Binding ToggleGridCommand}"
+                                        BackgroundColor="#333333"
+                                        TextColor="White"
+                                        CornerRadius="20"
+                                        MinimumHeightRequest="44"
+                                        Padding="16,10" />
+                                <Label Grid.Column="2"
+                                       Text="{Binding GridSpacing, StringFormat='{0:0}px'}"
+                                       TextColor="White"
+                                       VerticalOptions="Center" />
+                            </Grid>
+
+                            <Slider Minimum="16"
+                                    Maximum="160"
+                                    Value="{Binding GridSpacing}"
+                                    ThumbColor="#F5E7A1"
+                                    MinimumTrackColor="#F5E7A1"
+                                    MaximumTrackColor="#4A4A4A"
+                                    HeightRequest="40" />
                         </VerticalStackLayout>
                     </ScrollView>
                 </Border>
