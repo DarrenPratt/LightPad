@@ -5,6 +5,7 @@
              x:Class="LightPad.App.Views.MainPage"
              x:DataType="viewModels:MainViewModel"
              Title="LightPad"
+             SafeAreaEdges="All"
              BackgroundColor="#F4EBDD">
 
     <Grid RowDefinitions="Auto,*">
@@ -45,18 +46,21 @@
 
         <ScrollView Grid.Row="1">
             <VerticalStackLayout Padding="20,18,20,24"
-                                 Spacing="16">
-                <Grid ColumnDefinitions="*,*"
-                      RowDefinitions="Auto,Auto"
-                      ColumnSpacing="16"
-                      RowSpacing="16">
-                    <Border Grid.Row="0"
-                            Grid.Column="0"
-                            BackgroundColor="#FFF9F2"
+                                 Spacing="16"
+                                 MaximumWidthRequest="1180"
+                                 HorizontalOptions="Center">
+                <FlexLayout Direction="Row"
+                            Wrap="Wrap"
+                            JustifyContent="Center"
+                            AlignItems="Stretch">
+                    <Border BackgroundColor="#FFF9F2"
                             Stroke="#D8C4AA"
                             StrokeThickness="1"
                             StrokeShape="RoundRectangle 28"
                             MinimumHeightRequest="178"
+                            WidthRequest="{OnIdiom Phone=160, Tablet=330, Desktop=330}"
+                            MaximumWidthRequest="360"
+                            Margin="8"
                             Padding="18">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding OpenLightboxCommand}" />
@@ -95,13 +99,14 @@
                         </Grid>
                     </Border>
 
-                    <Border Grid.Row="0"
-                            Grid.Column="1"
-                            BackgroundColor="#FFF9F2"
+                    <Border BackgroundColor="#FFF9F2"
                             Stroke="#D8C4AA"
                             StrokeThickness="1"
                             StrokeShape="RoundRectangle 28"
                             MinimumHeightRequest="178"
+                            WidthRequest="{OnIdiom Phone=160, Tablet=330, Desktop=330}"
+                            MaximumWidthRequest="360"
+                            Margin="8"
                             Padding="18">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding OpenTraceImageCommand}" />
@@ -140,13 +145,14 @@
                         </Grid>
                     </Border>
 
-                    <Border Grid.Row="1"
-                            Grid.Column="0"
-                            BackgroundColor="#FFF9F2"
+                    <Border BackgroundColor="#FFF9F2"
                             Stroke="#D8C4AA"
                             StrokeThickness="1"
                             StrokeShape="RoundRectangle 28"
                             MinimumHeightRequest="178"
+                            WidthRequest="{OnIdiom Phone=160, Tablet=330, Desktop=330}"
+                            MaximumWidthRequest="360"
+                            Margin="8"
                             Padding="18">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding OpenAnimationFramesCommand}" />
@@ -185,13 +191,14 @@
                         </Grid>
                     </Border>
 
-                    <Border Grid.Row="1"
-                            Grid.Column="1"
-                            BackgroundColor="#FFF9F2"
+                    <Border BackgroundColor="#FFF9F2"
                             Stroke="#D8C4AA"
                             StrokeThickness="1"
                             StrokeShape="RoundRectangle 28"
                             MinimumHeightRequest="178"
+                            WidthRequest="{OnIdiom Phone=160, Tablet=330, Desktop=330}"
+                            MaximumWidthRequest="360"
+                            Margin="8"
                             Padding="18">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding OpenSettingsCommand}" />
@@ -229,7 +236,7 @@
                                    FontSize="13" />
                         </Grid>
                     </Border>
-                </Grid>
+                </FlexLayout>
             </VerticalStackLayout>
         </ScrollView>
     </Grid>

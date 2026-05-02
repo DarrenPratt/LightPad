@@ -5,6 +5,7 @@
              x:Class="LightPad.App.Views.SettingsPage"
              x:DataType="viewModels:SettingsViewModel"
              Shell.NavBarIsVisible="False"
+             SafeAreaEdges="All"
              BackgroundColor="#111111">
     <Grid RowDefinitions="Auto,*"
           Padding="16"
@@ -43,10 +44,18 @@
         </Grid>
 
         <ScrollView Grid.Row="1">
-            <VerticalStackLayout Spacing="16">
+            <FlexLayout Direction="Row"
+                        Wrap="Wrap"
+                        JustifyContent="Center"
+                        AlignItems="Start"
+                        MaximumWidthRequest="1160"
+                        HorizontalOptions="Center">
                 <Border BackgroundColor="#D91A1A1A"
                         StrokeThickness="0"
-                        StrokeShape="RoundRectangle 28">
+                        StrokeShape="RoundRectangle 28"
+                        WidthRequest="{OnIdiom Phone=360, Tablet=520, Desktop=520}"
+                        MaximumWidthRequest="560"
+                        Margin="0,0,16,16">
                     <VerticalStackLayout Padding="20"
                                          Spacing="16">
                         <Label Text="Light Surface Defaults"
@@ -174,9 +183,13 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <Border BackgroundColor="#D91A1A1A"
-                        StrokeThickness="0"
-                        StrokeShape="RoundRectangle 28">
+                <VerticalStackLayout WidthRequest="{OnIdiom Phone=360, Tablet=420, Desktop=420}"
+                                     MaximumWidthRequest="460"
+                                     Spacing="16"
+                                     Margin="0,0,0,16">
+                    <Border BackgroundColor="#D91A1A1A"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 28">
                     <VerticalStackLayout Padding="20"
                                          Spacing="16">
                         <Label Text="Trace Defaults"
@@ -203,22 +216,23 @@
                                 MinimumTrackColor="#F5E7A1"
                                 MaximumTrackColor="#4A4A4A" />
                     </VerticalStackLayout>
-                </Border>
+                    </Border>
 
-                <Border BackgroundColor="#D91A1A1A"
-                        StrokeThickness="0"
-                        StrokeShape="RoundRectangle 28">
-                    <VerticalStackLayout Padding="20"
-                                         Spacing="10">
-                        <Label Text="Global vs Session"
-                               TextColor="#F5E7A1"
-                               FontAttributes="Bold"
-                               FontSize="18" />
-                        <Label Text="{Binding ScopeSummaryText}"
-                               TextColor="White" />
-                    </VerticalStackLayout>
-                </Border>
-            </VerticalStackLayout>
+                    <Border BackgroundColor="#D91A1A1A"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 28">
+                        <VerticalStackLayout Padding="20"
+                                             Spacing="10">
+                            <Label Text="Global vs Session"
+                                   TextColor="#F5E7A1"
+                                   FontAttributes="Bold"
+                                   FontSize="18" />
+                            <Label Text="{Binding ScopeSummaryText}"
+                                   TextColor="White" />
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+            </FlexLayout>
         </ScrollView>
     </Grid>
 </ContentPage>

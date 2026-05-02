@@ -6,45 +6,52 @@
              x:Class="LightPad.App.Views.TracePage"
              x:DataType="viewModels:TraceViewModel"
              Shell.NavBarIsVisible="False"
+             SafeAreaEdges="All"
              BackgroundColor="#111111">
     <Grid RowDefinitions="Auto,*"
           Padding="8"
           RowSpacing="8">
-        <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto"
-              ColumnSpacing="10"
-              IsVisible="{Binding IsControlsExpanded}">
+        <FlexLayout Direction="Row"
+                    Wrap="Wrap"
+                    AlignItems="Center"
+                    JustifyContent="Center"
+                    IsVisible="{Binding IsControlsExpanded}">
             <Button Text="Back"
                     Command="{Binding BackCommand}"
                     BackgroundColor="#D91A1A1A"
                     TextColor="White"
                     CornerRadius="20"
                     Padding="16,10"
+                    Margin="0,0,10,10"
                     MinimumHeightRequest="48" />
 
-            <Button Grid.Column="1"
-                    Text="Undo"
+            <Button Text="Undo"
                     Command="{Binding UndoCommand}"
                     BackgroundColor="#252525"
                     TextColor="White"
                     CornerRadius="20"
                     Padding="16,10"
+                    Margin="0,0,10,10"
                     MinimumHeightRequest="48"
                     MinimumWidthRequest="86" />
 
-            <Button Grid.Column="2"
-                    Text="Redo"
+            <Button Text="Redo"
                     Command="{Binding RedoCommand}"
                     BackgroundColor="#252525"
                     TextColor="White"
                     CornerRadius="20"
                     Padding="16,10"
+                    Margin="0,0,10,10"
                     MinimumHeightRequest="48"
                     MinimumWidthRequest="86" />
 
-            <Border Grid.Column="3"
-                    BackgroundColor="#D91A1A1A"
+            <Border BackgroundColor="#D91A1A1A"
                     StrokeThickness="0"
-                    StrokeShape="RoundRectangle 20">
+                    StrokeShape="RoundRectangle 20"
+                    MinimumWidthRequest="{OnIdiom Phone=220, Tablet=340, Desktop=340}"
+                    MaximumWidthRequest="520"
+                    Margin="0,0,10,10"
+                    HorizontalOptions="Center">
                 <VerticalStackLayout Padding="16,10"
                                      Spacing="4">
                     <Label Text="Trace Image"
@@ -58,16 +65,16 @@
                 </VerticalStackLayout>
             </Border>
 
-            <Button Grid.Column="4"
-                    Text="Import"
+            <Button Text="Import"
                     Command="{Binding ImportImageCommand}"
                     BackgroundColor="#F5E7A1"
                     TextColor="Black"
                     CornerRadius="20"
                     Padding="16,10"
+                    Margin="0,0,0,10"
                     MinimumHeightRequest="48"
                     MinimumWidthRequest="104" />
-        </Grid>
+        </FlexLayout>
 
         <Border Grid.Row="1"
                 BackgroundColor="#1A1A1A"
@@ -157,7 +164,8 @@
                 <Border BackgroundColor="#E0101010"
                         StrokeThickness="0"
                         StrokeShape="RoundRectangle 28"
-                        HorizontalOptions="Fill"
+                        HorizontalOptions="Center"
+                        MaximumWidthRequest="1120"
                         VerticalOptions="End"
                         Margin="10"
                         IsVisible="{Binding IsControlsExpanded}">
@@ -165,8 +173,9 @@
                                 MaximumHeightRequest="300">
                         <VerticalStackLayout Padding="18"
                                              Spacing="18">
-                            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto"
-                                  ColumnSpacing="10">
+                            <FlexLayout Direction="Row"
+                                        Wrap="Wrap"
+                                        AlignItems="Center">
                                 <VerticalStackLayout Spacing="4">
                                     <Label Text="{Binding ImageName}"
                                            TextColor="#F5E7A1"
@@ -177,42 +186,42 @@
                                            MaxLines="2" />
                                 </VerticalStackLayout>
 
-                                <Button Grid.Column="1"
-                                        Text="{Binding ControlsToggleText}"
+                                <Button Text="{Binding ControlsToggleText}"
                                         Command="{Binding ToggleControlsCommand}"
                                         BackgroundColor="#252525"
                                         TextColor="White"
                                         CornerRadius="22"
                                         MinimumHeightRequest="48"
+                                        Margin="10,0,0,10"
                                         Padding="16,10" />
 
-                                <Button Grid.Column="2"
-                                        Text="{Binding LockButtonText}"
+                                <Button Text="{Binding LockButtonText}"
                                         Command="{Binding ToggleImageLockCommand}"
                                         BackgroundColor="#333333"
                                         TextColor="White"
                                         CornerRadius="22"
                                         MinimumHeightRequest="48"
+                                        Margin="10,0,0,10"
                                         Padding="16,10" />
 
-                                <Button Grid.Column="3"
-                                        Text="Clear Image"
+                                <Button Text="Clear Image"
                                         Command="{Binding ClearImageCommand}"
                                         BackgroundColor="#5A2424"
                                         TextColor="White"
                                         CornerRadius="22"
                                         MinimumHeightRequest="48"
+                                        Margin="10,0,0,10"
                                         Padding="16,10" />
 
-                                <Button Grid.Column="4"
-                                        Text="Reset View"
+                                <Button Text="Reset View"
                                         Command="{Binding ResetViewCommand}"
                                         BackgroundColor="#F5E7A1"
                                         TextColor="Black"
                                         CornerRadius="22"
                                         MinimumHeightRequest="48"
+                                        Margin="10,0,0,10"
                                         Padding="16,10" />
-                            </Grid>
+                            </FlexLayout>
 
                             <Grid ColumnDefinitions="*,Auto">
                                 <Label Text="Opacity"

@@ -7,25 +7,31 @@
              x:Name="PageRoot"
              x:DataType="viewModels:AnimationViewModel"
              Shell.NavBarIsVisible="False"
+             SafeAreaEdges="All"
              BackgroundColor="#111111">
     <Grid RowDefinitions="Auto,*"
           Padding="8"
           RowSpacing="8">
-        <Grid ColumnDefinitions="Auto,*,Auto"
-              ColumnSpacing="10"
-              IsVisible="{Binding IsControlsExpanded}">
+        <FlexLayout Direction="Row"
+                    Wrap="Wrap"
+                    AlignItems="Center"
+                    JustifyContent="Center"
+                    IsVisible="{Binding IsControlsExpanded}">
             <Button Text="Back"
                     Command="{Binding BackCommand}"
                     BackgroundColor="#D91A1A1A"
                     TextColor="White"
                     CornerRadius="20"
                     Padding="16,10"
+                    Margin="0,0,10,10"
                     MinimumHeightRequest="48" />
 
-            <Border Grid.Column="1"
-                    BackgroundColor="#D91A1A1A"
+            <Border BackgroundColor="#D91A1A1A"
                     StrokeThickness="0"
-                    StrokeShape="RoundRectangle 20">
+                    StrokeShape="RoundRectangle 20"
+                    MinimumWidthRequest="{OnIdiom Phone=220, Tablet=340, Desktop=340}"
+                    MaximumWidthRequest="560"
+                    Margin="0,0,10,10">
                 <VerticalStackLayout Padding="16,10"
                                      Spacing="4">
                     <Label Text="Animation Frames"
@@ -39,16 +45,16 @@
                 </VerticalStackLayout>
             </Border>
 
-            <Button Grid.Column="2"
-                    Text="Import"
+            <Button Text="Import"
                     Command="{Binding ImportFrameCommand}"
                     BackgroundColor="#F5E7A1"
                     TextColor="Black"
                     CornerRadius="20"
                     Padding="16,10"
+                    Margin="0,0,0,10"
                     MinimumHeightRequest="48"
                     MinimumWidthRequest="104" />
-        </Grid>
+        </FlexLayout>
 
         <Border Grid.Row="1"
                 BackgroundColor="#1A1A1A"
@@ -138,7 +144,8 @@
                 <Border BackgroundColor="#E0101010"
                         StrokeThickness="0"
                         StrokeShape="RoundRectangle 28"
-                        HorizontalOptions="Fill"
+                        HorizontalOptions="Center"
+                        MaximumWidthRequest="1120"
                         VerticalOptions="End"
                         Margin="10"
                         IsVisible="{Binding IsControlsExpanded}">
@@ -147,8 +154,9 @@
                                 MaximumHeightRequest="340">
                         <VerticalStackLayout Padding="18"
                                              Spacing="18">
-                            <Grid ColumnDefinitions="*,Auto,Auto,Auto"
-                                  ColumnSpacing="10">
+                            <FlexLayout Direction="Row"
+                                        Wrap="Wrap"
+                                        AlignItems="Center">
                                 <VerticalStackLayout Spacing="4">
                                     <Label Text="{Binding CurrentFrameName}"
                                            TextColor="#F5E7A1"
@@ -158,77 +166,80 @@
                                            TextColor="White" />
                                 </VerticalStackLayout>
 
-                                <Button Grid.Column="1"
-                                        Text="{Binding ControlsToggleText}"
+                                <Button Text="{Binding ControlsToggleText}"
                                         Command="{Binding ToggleControlsCommand}"
                                         BackgroundColor="#252525"
                                         TextColor="White"
                                         CornerRadius="22"
                                         MinimumHeightRequest="48"
+                                        Margin="10,0,0,10"
                                         Padding="16,10" />
 
-                                <Button Grid.Column="2"
-                                        Text="{Binding FrameLockButtonText}"
+                                <Button Text="{Binding FrameLockButtonText}"
                                         Command="{Binding ToggleFrameLockCommand}"
                                         BackgroundColor="#333333"
                                         TextColor="White"
                                         CornerRadius="22"
                                         MinimumHeightRequest="48"
+                                        Margin="10,0,0,10"
                                         Padding="16,10" />
 
-                                <Button Grid.Column="3"
-                                        Text="Reset View"
+                                <Button Text="Reset View"
                                         Command="{Binding ResetViewCommand}"
                                         BackgroundColor="#F5E7A1"
                                         TextColor="Black"
                                         CornerRadius="22"
                                         MinimumHeightRequest="48"
+                                        Margin="10,0,0,10"
                                         Padding="16,10" />
-                            </Grid>
+                            </FlexLayout>
 
-                            <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto"
-                                  ColumnSpacing="10">
+                            <FlexLayout Direction="Row"
+                                        Wrap="Wrap"
+                                        AlignItems="Center">
                                 <Button Text="Prev"
                                         Command="{Binding PreviousFrameCommand}"
                                         BackgroundColor="#333333"
                                         TextColor="White"
                                         CornerRadius="20"
-                                        MinimumHeightRequest="44" />
-                                <Button Grid.Column="1"
-                                        Text="Next"
+                                        MinimumHeightRequest="44"
+                                        Margin="0,0,10,10" />
+                                <Button Text="Next"
                                         Command="{Binding NextFrameCommand}"
                                         BackgroundColor="#333333"
                                         TextColor="White"
                                         CornerRadius="20"
-                                        MinimumHeightRequest="44" />
-                                <Label Grid.Column="2"
-                                       Text="{Binding StatusText}"
+                                        MinimumHeightRequest="44"
+                                        Margin="0,0,10,10" />
+                                <Label Text="{Binding StatusText}"
                                        TextColor="White"
                                        VerticalOptions="Center"
                                        LineBreakMode="TailTruncation"
-                                       MaxLines="1" />
-                                <Button Grid.Column="3"
-                                        Text="Remove"
+                                       MaxLines="1"
+                                       WidthRequest="{OnIdiom Phone=180, Tablet=260, Desktop=260}"
+                                       Margin="0,0,10,10" />
+                                <Button Text="Remove"
                                         Command="{Binding RemoveCurrentFrameCommand}"
                                         BackgroundColor="#5A2424"
                                         TextColor="White"
                                         CornerRadius="20"
-                                        MinimumHeightRequest="44" />
-                                <Button Grid.Column="4"
-                                        Text="Clear All"
+                                        MinimumHeightRequest="44"
+                                        Margin="0,0,10,10" />
+                                <Button Text="Clear All"
                                         Command="{Binding ClearFramesCommand}"
                                         BackgroundColor="#5A2424"
                                         TextColor="White"
                                         CornerRadius="20"
-                                        MinimumHeightRequest="44" />
-                                <Button Grid.Column="5"
-                                        Text="Import"
+                                        MinimumHeightRequest="44"
+                                        Margin="0,0,10,10" />
+                                <Button Text="Import"
                                         Command="{Binding ImportFrameCommand}"
                                         BackgroundColor="#F5E7A1"
                                         TextColor="Black"
                                         CornerRadius="20"
-                                        MinimumHeightRequest="44" />
-                            </Grid>
+                                        MinimumHeightRequest="44"
+                                        Margin="0,0,0,10" />
+                            </FlexLayout>
 
                             <CollectionView ItemsSource="{Binding Frames}"
                                             SelectionMode="None"
