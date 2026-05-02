@@ -14,6 +14,7 @@ public sealed class AnimationViewModel : BaseViewModel
     private const double MinZoom = 0.5;
     private const double MaxZoom = 4.0;
     private readonly AnimationSessionState _sessionState;
+    private readonly IDeviceBrightnessService _deviceBrightnessService;
     private readonly IImagePickerService _imagePickerService;
     private readonly IScreenWakeService _screenWakeService;
     private readonly ISettingsService _settingsService;
@@ -37,9 +38,11 @@ public sealed class AnimationViewModel : BaseViewModel
         AnimationSessionState sessionState,
         IScreenWakeService screenWakeService,
         IImagePickerService imagePickerService,
-        ISettingsService settingsService)
+        ISettingsService settingsService,
+        IDeviceBrightnessService deviceBrightnessService)
     {
         _sessionState = sessionState;
+        _deviceBrightnessService = deviceBrightnessService;
         _screenWakeService = screenWakeService;
         _imagePickerService = imagePickerService;
         _settingsService = settingsService;
@@ -299,13 +302,16 @@ public sealed class AnimationViewModel : BaseViewModel
         _surfaceColorTemperature,
         _surfaceCustomColorHex);
 
-    public double TraceBackdropOverlayOpacity => 1.0 - _surfaceBrightness;
+    public double TraceBackdropOverlayOpacity => _deviceBrightnessService.UseOverlayFallback ? 1.0 - _surfaceBrightness : 0.0;
 
     public string TraceBackdropStatusText =>
-        $"Animation background reuses the global {_surfacePreset} light defaults at {_surfaceBrightness:P0} brightness.";
+        _deviceBrightnessService.UseOverlayFallback
+            ? $"Animation background reuses the global {_surfacePreset} light defaults at {_surfaceBrightness:P0} brightness via overlay simulation."
+            : $"Animation background reuses the global {_surfacePreset} light defaults while hardware brightness override is active.";
 
     public async Task OnAppearingAsync()
     {
+        await _deviceBrightnessService.ApplyBrightnessAsync(_surfaceBrightness);
         await _screenWakeService.ActivateAsync(nameof(AnimationViewModel));
     }
 

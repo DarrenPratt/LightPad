@@ -20,6 +20,7 @@ public sealed class LightboxViewModel : BaseViewModel
     private static readonly Color InactivePresetBackground = Color.FromArgb("#2A2A2A");
     private static readonly Color ActivePresetText = Colors.Black;
     private static readonly Color InactivePresetText = Colors.White;
+    private readonly IDeviceBrightnessService _deviceBrightnessService;
     private readonly ISettingsService _settingsService;
     private readonly IScreenWakeService _screenWakeService;
     private double _brightness;
@@ -33,8 +34,12 @@ public sealed class LightboxViewModel : BaseViewModel
     private double _unlockProgress;
     private CancellationTokenSource? _unlockHoldCts;
 
-    public LightboxViewModel(ISettingsService settingsService, IScreenWakeService screenWakeService)
+    public LightboxViewModel(
+        ISettingsService settingsService,
+        IScreenWakeService screenWakeService,
+        IDeviceBrightnessService deviceBrightnessService)
     {
+        _deviceBrightnessService = deviceBrightnessService;
         _settingsService = settingsService;
         _screenWakeService = screenWakeService;
         _brightness = LightSurfaceStyleCalculator.Clamp(settingsService.Brightness, MinBrightness, MaxBrightness);
@@ -74,6 +79,7 @@ public sealed class LightboxViewModel : BaseViewModel
             }
 
             _settingsService.Brightness = clampedValue;
+            _ = _deviceBrightnessService.ApplyBrightnessAsync(clampedValue);
             RaiseVisualStateChanged();
         }
     }
@@ -233,7 +239,11 @@ public sealed class LightboxViewModel : BaseViewModel
 
     public Color LightColor => LightSurfaceStyleCalculator.ResolveLightColor(SelectedPreset, ColorTemperature, _appliedCustomColorHex);
 
-    public double BrightnessOverlayOpacity => 1.0 - Brightness;
+    public double BrightnessOverlayOpacity => _deviceBrightnessService.UseOverlayFallback ? 1.0 - Brightness : 0.0;
+
+    public string BrightnessControlModeText => _deviceBrightnessService.UseOverlayFallback
+        ? "Brightness is currently simulated with an overlay because hardware brightness override is unavailable on this device/runtime."
+        : "Hardware brightness override is active for the app window.";
 
     public Color WhitePresetBackground => GetPresetBackground(LightColorPreset.White);
 
@@ -269,6 +279,7 @@ public sealed class LightboxViewModel : BaseViewModel
 
     public async Task OnAppearingAsync()
     {
+        await _deviceBrightnessService.ApplyBrightnessAsync(Brightness);
         await _screenWakeService.ActivateAsync(nameof(LightboxViewModel));
         RevealImmersiveChrome();
         OnPropertyChanged(nameof(IsWakeLockActive));
@@ -375,6 +386,11 @@ public sealed class LightboxViewModel : BaseViewModel
             return;
         }
 
+        if (LightSurfaceStyleCalculator.TryGetPresetColorTemperature(preset, out var presetColorTemperature))
+        {
+            ColorTemperature = presetColorTemperature;
+        }
+
         if (preset == LightColorPreset.Custom)
         {
             ApplyCustomColor();
@@ -440,6 +456,7 @@ public sealed class LightboxViewModel : BaseViewModel
     {
         OnPropertyChanged(nameof(LightColor));
         OnPropertyChanged(nameof(BrightnessOverlayOpacity));
+        OnPropertyChanged(nameof(BrightnessControlModeText));
         OnPropertyChanged(nameof(WhitePresetBackground));
         OnPropertyChanged(nameof(WarmPresetBackground));
         OnPropertyChanged(nameof(CoolPresetBackground));

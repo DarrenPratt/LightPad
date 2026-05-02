@@ -25,6 +25,7 @@ public static class MauiProgram
 		builder.Services.AddSingleton<ISettingsService, SettingsService>();
 		builder.Services.AddSingleton<IImagePickerService, ImagePickerService>();
 		builder.Services.AddSingleton<IScreenWakeService, ScreenWakeService>();
+		builder.Services.AddSingleton<IDeviceBrightnessService, DeviceBrightnessService>();
 		builder.Services.AddSingleton<TraceSessionState>();
 		builder.Services.AddSingleton<AnimationSessionState>();
 		builder.Services.AddTransient<MainViewModel>();

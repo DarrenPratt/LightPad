@@ -79,6 +79,11 @@
                                 MinimumTrackColor="#F5E7A1"
                                 MaximumTrackColor="#4A4A4A" />
 
+                        <Label Text="{Binding BrightnessControlModeText}"
+                               TextColor="#CCFFFFFF"
+                               FontSize="12"
+                               LineBreakMode="WordWrap" />
+
                         <Grid ColumnDefinitions="*,Auto">
                             <Label Text="White Temperature"
                                    TextColor="White"

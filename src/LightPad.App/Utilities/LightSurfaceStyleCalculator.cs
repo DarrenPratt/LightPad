@@ -6,6 +6,10 @@ namespace LightPad.App.Utilities;
 
 public static class LightSurfaceStyleCalculator
 {
+    public const double DefaultWhiteTemperature = 6500.0;
+    public const double DefaultWarmTemperature = 3200.0;
+    public const double DefaultCoolTemperature = 8000.0;
+
     public static Color ResolveLightColor(LightColorPreset preset, double colorTemperature, string? customColorHex)
     {
         return preset switch
@@ -15,6 +19,25 @@ public static class LightSurfaceStyleCalculator
             LightColorPreset.Custom => ParseColorOrDefault(customColorHex, Colors.White),
             _ => FromColorTemperature(colorTemperature)
         };
+    }
+
+    public static bool TryGetPresetColorTemperature(LightColorPreset preset, out double colorTemperature)
+    {
+        switch (preset)
+        {
+            case LightColorPreset.White:
+                colorTemperature = DefaultWhiteTemperature;
+                return true;
+            case LightColorPreset.Warm:
+                colorTemperature = DefaultWarmTemperature;
+                return true;
+            case LightColorPreset.Cool:
+                colorTemperature = DefaultCoolTemperature;
+                return true;
+            default:
+                colorTemperature = 0.0;
+                return false;
+        }
     }
 
     public static string NormalizeHexOrDefault(string? value, string fallback)

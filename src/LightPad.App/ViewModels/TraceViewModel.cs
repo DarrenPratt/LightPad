@@ -17,6 +17,7 @@ public sealed class TraceViewModel : BaseViewModel
     private const double MinGridSpacing = 16.0;
     private const double MaxGridSpacing = 160.0;
     private const double RotationStep = 5.0;
+    private readonly IDeviceBrightnessService _deviceBrightnessService;
     private readonly IImagePickerService _imagePickerService;
     private readonly IScreenWakeService _screenWakeService;
     private readonly ISettingsService _settingsService;
@@ -44,8 +45,10 @@ public sealed class TraceViewModel : BaseViewModel
         TraceSessionState sessionState,
         IScreenWakeService screenWakeService,
         IImagePickerService imagePickerService,
-        ISettingsService settingsService)
+        ISettingsService settingsService,
+        IDeviceBrightnessService deviceBrightnessService)
     {
+        _deviceBrightnessService = deviceBrightnessService;
         SessionState = sessionState;
         _screenWakeService = screenWakeService;
         _imagePickerService = imagePickerService;
@@ -329,15 +332,18 @@ public sealed class TraceViewModel : BaseViewModel
 
     public Color TraceBackdropColor => LightSurfaceStyleCalculator.ResolveLightColor(_surfacePreset, _surfaceColorTemperature, _surfaceCustomColorHex);
 
-    public double TraceBackdropOverlayOpacity => 1.0 - _surfaceBrightness;
+    public double TraceBackdropOverlayOpacity => _deviceBrightnessService.UseOverlayFallback ? 1.0 - _surfaceBrightness : 0.0;
 
     public string TraceBackdropStatusText =>
-        $"Trace background reuses the global {_surfacePreset} light defaults at {_surfaceBrightness:P0} brightness.";
+        _deviceBrightnessService.UseOverlayFallback
+            ? $"Trace background reuses the global {_surfacePreset} light defaults at {_surfaceBrightness:P0} brightness via overlay simulation."
+            : $"Trace background reuses the global {_surfacePreset} light defaults while hardware brightness override is active.";
 
     public string StatusText => _statusMessage;
 
     public async Task OnAppearingAsync()
     {
+        await _deviceBrightnessService.ApplyBrightnessAsync(_surfaceBrightness);
         await _screenWakeService.ActivateAsync(nameof(TraceViewModel));
     }
 

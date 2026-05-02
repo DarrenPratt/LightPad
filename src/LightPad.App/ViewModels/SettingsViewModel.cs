@@ -12,6 +12,7 @@ public sealed class SettingsViewModel : BaseViewModel
     private const double MaxBrightness = 1.0;
     private const double MinColorTemperature = 2700.0;
     private const double MaxColorTemperature = 9000.0;
+    private readonly IDeviceBrightnessService _deviceBrightnessService;
     private readonly ISettingsService _settingsService;
     private double _brightness;
     private double _colorTemperature;
@@ -20,8 +21,9 @@ public sealed class SettingsViewModel : BaseViewModel
     private string _appliedCustomColorHex;
     private double _defaultTraceOpacity;
 
-    public SettingsViewModel(ISettingsService settingsService)
+    public SettingsViewModel(ISettingsService settingsService, IDeviceBrightnessService deviceBrightnessService)
     {
+        _deviceBrightnessService = deviceBrightnessService;
         _settingsService = settingsService;
         _brightness = LightSurfaceStyleCalculator.Clamp(settingsService.Brightness, MinBrightness, MaxBrightness);
         _colorTemperature = LightSurfaceStyleCalculator.Clamp(settingsService.ColorTemperature, MinColorTemperature, MaxColorTemperature);
@@ -34,6 +36,7 @@ public sealed class SettingsViewModel : BaseViewModel
         ApplyCustomColorCommand = new Command(ApplyCustomColor);
         SelectPresetCommand = new Command<string>(SelectPreset);
         ResetDefaultsCommand = new Command(ResetDefaults);
+        _ = _deviceBrightnessService.ApplyBrightnessAsync(_brightness);
     }
 
     public ICommand BackCommand { get; }
@@ -56,6 +59,7 @@ public sealed class SettingsViewModel : BaseViewModel
             }
 
             _settingsService.Brightness = clampedValue;
+            _ = _deviceBrightnessService.ApplyBrightnessAsync(clampedValue);
             RaiseVisualStateChanged();
         }
     }
@@ -127,7 +131,11 @@ public sealed class SettingsViewModel : BaseViewModel
 
     public Color PreviewLightColor => LightSurfaceStyleCalculator.ResolveLightColor(SelectedPreset, ColorTemperature, _appliedCustomColorHex);
 
-    public double PreviewOverlayOpacity => 1.0 - Brightness;
+    public double PreviewOverlayOpacity => _deviceBrightnessService.UseOverlayFallback ? 1.0 - Brightness : 0.0;
+
+    public string BrightnessControlModeText => _deviceBrightnessService.UseOverlayFallback
+        ? "Hardware brightness control is unavailable here, so LightPad is previewing brightness with a dimming overlay."
+        : "Hardware brightness override is active for the current app window.";
 
     public Color WhitePresetBackground => GetPresetBackground(LightColorPreset.White);
 
@@ -156,6 +164,11 @@ public sealed class SettingsViewModel : BaseViewModel
         if (!Enum.TryParse<LightColorPreset>(presetName, true, out var preset))
         {
             return;
+        }
+
+        if (LightSurfaceStyleCalculator.TryGetPresetColorTemperature(preset, out var presetColorTemperature))
+        {
+            ColorTemperature = presetColorTemperature;
         }
 
         if (preset == LightColorPreset.Custom)
@@ -187,7 +200,7 @@ public sealed class SettingsViewModel : BaseViewModel
     private void ResetDefaults()
     {
         Brightness = 1.0;
-        ColorTemperature = 6500.0;
+        ColorTemperature = LightSurfaceStyleCalculator.DefaultWhiteTemperature;
         _appliedCustomColorHex = "#FFFFFF";
         _settingsService.CustomColorHex = _appliedCustomColorHex;
         CustomColorHexInput = _appliedCustomColorHex;
@@ -212,6 +225,7 @@ public sealed class SettingsViewModel : BaseViewModel
         OnPropertyChanged(nameof(CanAdjustColorTemperature));
         OnPropertyChanged(nameof(PreviewLightColor));
         OnPropertyChanged(nameof(PreviewOverlayOpacity));
+        OnPropertyChanged(nameof(BrightnessControlModeText));
         OnPropertyChanged(nameof(WhitePresetBackground));
         OnPropertyChanged(nameof(WarmPresetBackground));
         OnPropertyChanged(nameof(CoolPresetBackground));
